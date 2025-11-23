@@ -1,0 +1,133 @@
+@if (data(); as chartData) {
+  <div class="chart-container">
+    <div class="chart-header">
+      <h4>{{ chartData.metricName }} Over Time</h4>
+      <div class="current-value">
+        Current: <span class="value">{{ formatValue(chartData.currentValue) }}</span>
+      </div>
+    </div>
+
+    <svg [attr.viewBox]="viewBox" preserveAspectRatio="xMidYMid meet" class="chart-svg">
+      <defs>
+        <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+
+      <g [attr.transform]="'translate(' + padding.left + ',' + padding.top + ')'">
+        <!-- Grid lines -->
+        @for (label of yAxisLabels(); track label.value) {
+          <line
+            [attr.x1]="0"
+            [attr.y1]="label.y"
+            [attr.x2]="chartWidth()"
+            [attr.y2]="label.y"
+            class="grid-line"
+          />
+        }
+
+        <!-- Signal level lines -->
+        @for (level of signalLinesData(); track level.label) {
+          <line
+            [attr.x1]="level.x1"
+            [attr.y1]="level.y"
+            [attr.x2]="level.x2"
+            [attr.y2]="level.y"
+            class="signal-line"
+            [style.stroke]="getSignalColor(level.type)"
+            stroke-dasharray="5,5"
+            stroke-width="2"
+          />
+          <text
+            [attr.x]="chartWidth() + 5"
+            [attr.y]="level.y + 4"
+            class="signal-label"
+            [style.fill]="getSignalColor(level.type)"
+          >
+            {{ level.label }}
+          </text>
+        }
+
+        <!-- Main line chart -->
+        <path
+          [attr.d]="pathData()"
+          class="chart-line"
+          fill="none"
+          stroke="url(#lineGradient)"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+
+        <!-- Data points -->
+        @for (point of chartData.timeSeries; track $index; let i = $index) {
+          @if (i === 0 || i === chartData.timeSeries.length - 1 || i % 10 === 0) {
+            <circle
+              [attr.cx]="(i / (chartData.timeSeries.length - 1)) * chartWidth()"
+              [attr.cy]="chartHeight() - ((point.value - yAxisLabels()[0].value) / (yAxisLabels()[yAxisLabels().length - 1].value - yAxisLabels()[0].value)) * chartHeight()"
+              r="4"
+              class="chart-point"
+              fill="#667eea"
+            />
+          }
+        }
+
+        <!-- Y-axis labels -->
+        @for (label of yAxisLabels(); track label.value) {
+          <text
+            [attr.x]="-10"
+            [attr.y]="label.y + 4"
+            class="axis-label y-label"
+            text-anchor="end"
+          >
+            {{ formatValue(label.value) }}
+          </text>
+        }
+
+        <!-- X-axis labels -->
+        @for (label of xAxisLabels(); track label.time) {
+          <text
+            [attr.x]="label.x"
+            [attr.y]="chartHeight() + 25"
+            class="axis-label x-label"
+            text-anchor="middle"
+          >
+            {{ label.time }}
+          </text>
+        }
+
+        <!-- Axes -->
+        <line
+          [attr.x1]="0"
+          [attr.y1]="0"
+          [attr.x2]="0"
+          [attr.y2]="chartHeight()"
+          class="axis"
+        />
+        <line
+          [attr.x1]="0"
+          [attr.y1]="chartHeight()"
+          [attr.x2]="chartWidth()"
+          [attr.y2]="chartHeight()"
+          class="axis"
+        />
+      </g>
+    </svg>
+
+    <!-- Legend -->
+    <div class="chart-legend">
+      @for (level of chartData.signalLevels; track level.label) {
+        <div class="legend-item">
+          <span class="legend-line" [style.background-color]="getSignalColor(level.type)"></span>
+          <span class="legend-label">{{ level.label }}: {{ formatValue(level.value) }}</span>
+        </div>
+      }
+    </div>
+  </div>
+} @else {
+  <div class="chart-empty">
+    <p>No chart data available</p>
+  </div>
+}
+

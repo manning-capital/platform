@@ -4,176 +4,282 @@
     <p class="subtitle">Real-time monitoring of active positions and trade execution</p>
   </header>
 
-  <!-- Live Stats -->
-  <div class="live-stats">
-    <div class="stat-box total-pnl" [class.positive]="totalPnL() >= 0" [class.negative]="totalPnL() < 0">
-      <div class="stat-icon">
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filters-container">
+      <div class="filter-group">
+        <label class="filter-label">Search Symbol</label>
+        <input 
+          type="text" 
+          class="filter-input"
+          placeholder="e.g., AAPL"
+          [value]="searchTerm()"
+          (input)="onSearchChange($any($event.target).value)">
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">From Date</label>
+        <input 
+          type="date" 
+          class="filter-input"
+          [value]="formatDateForInput(startDate())"
+          (change)="onStartDateChange($any($event.target).value)">
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">To Date</label>
+        <input 
+          type="date" 
+          class="filter-input"
+          [value]="formatDateForInput(endDate())"
+          (change)="onEndDateChange($any($event.target).value)">
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Status</label>
+        <select 
+          class="filter-select"
+          [value]="filterStatus()"
+          (change)="onFilterStatusChange($any($event.target).value)">
+          <option value="ALL">All</option>
+          <option value="OPEN">Open</option>
+          <option value="CLOSED">Closed</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Side</label>
+        <select 
+          class="filter-select"
+          [value]="filterSide()"
+          (change)="onFilterSideChange($any($event.target).value)">
+          <option value="ALL">All</option>
+          <option value="BUY">Buy</option>
+          <option value="SELL">Sell</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Model</label>
+        <select 
+          class="filter-select"
+          [value]="filterModel()"
+          (change)="onFilterModelChange($any($event.target).value)">
+          <option value="ALL">All Models</option>
+          @for (model of models(); track model.id) {
+            <option [value]="model.id">{{ model.name }}</option>
+          }
+        </select>
+      </div>
+
+      <button class="clear-filters-btn" (click)="clearFilters()">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
         </svg>
-      </div>
-      <div class="stat-content">
-        <div class="stat-label">Total Open P&L</div>
-        <div class="stat-value">{{ formatCurrency(totalPnL()) }}</div>
-      </div>
-      <div class="pulse-ring"></div>
+        Clear
+      </button>
     </div>
 
-    <div class="stat-box open-positions">
-      <div class="stat-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
-        </svg>
-      </div>
-      <div class="stat-content">
-        <div class="stat-label">Open Positions</div>
-        <div class="stat-value">{{ openTrades().length }}</div>
-      </div>
-    </div>
-
-    <div class="stat-box winning">
-      <div class="stat-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-        </svg>
-      </div>
-      <div class="stat-content">
-        <div class="stat-label">Winning</div>
-        <div class="stat-value positive">{{ winningTrades() }}</div>
-      </div>
-    </div>
-
-    <div class="stat-box losing">
-      <div class="stat-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-        </svg>
-      </div>
-      <div class="stat-content">
-        <div class="stat-label">Losing</div>
-        <div class="stat-value negative">{{ losingTrades() }}</div>
-      </div>
+    <div class="filter-results">
+      Showing {{ paginatedTrades().length }} of {{ filteredTrades().length }} trades (Open positions always shown)
     </div>
   </div>
 
-  <!-- Open Trades Table -->
-  <section class="trades-section">
-    <div class="section-header">
-      <h2>
-        <span class="live-indicator"></span>
-        Active Positions
-      </h2>
-      <div class="update-indicator">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
-        </svg>
-        Live Updates
+  <!-- Master-Detail Layout -->
+  <div class="master-detail-container">
+    <!-- Trade List (Left Pane) -->
+    <div class="trade-list">
+      
+      <div class="trade-list-items">
+        @for (trade of allTradesForList(); track trade.id) {
+          <div 
+            class="trade-list-item"
+            [class.active]="isTradeSelected(trade)"
+            [class.closed]="trade.status === 'CLOSED'"
+            (click)="selectTrade(trade)">
+            <div class="trade-list-item-header">
+              <div class="trade-symbol">{{ trade.symbol }}</div>
+              <span class="side-badge small" [class.buy]="trade.side === 'BUY'" 
+                    [class.sell]="trade.side === 'SELL'">
+                {{ trade.side }}
+              </span>
+            </div>
+            <div class="trade-list-item-body">
+              <div class="trade-model-name">{{ getModelName(trade.modelId) }}</div>
+              <div class="trade-pnl" [class.positive]="trade.pnl >= 0" [class.negative]="trade.pnl < 0">
+                {{ formatCurrency(trade.pnl) }}
+              </div>
+            </div>
+            <div class="trade-list-item-footer">
+              <span class="trade-time">{{ formatTime(trade.timestamp) }}</span>
+              @if (trade.status === 'OPEN') {
+                <span class="status-indicator open">LIVE</span>
+              } @else {
+                <span class="status-indicator closed">CLOSED</span>
+              }
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-list">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+            </svg>
+            <p>No trades available</p>
+          </div>
+        }
       </div>
-    </div>
 
-    <div class="trades-grid">
-      @for (trade of openTrades(); track trade.id) {
-        <div class="trade-card" [class.profit]="trade.pnl >= 0" [class.loss]="trade.pnl < 0">
-          <div class="trade-card-header">
-            <div class="symbol-info">
-              <h3 class="symbol">{{ trade.symbol }}</h3>
-              <span class="model-tag">{{ getModelName(trade.modelId) }}</span>
-            </div>
-            <span class="side-badge" [class.buy]="trade.side === 'BUY'" 
-                  [class.sell]="trade.side === 'SELL'">
-              {{ trade.side }}
-            </span>
-          </div>
+      <!-- Pagination Controls -->
+      @if (totalPages() > 1) {
+        <div class="pagination">
+          <button 
+            class="page-btn"
+            [disabled]="currentPage() === 1"
+            (click)="previousPage()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+            </svg>
+          </button>
 
-          <div class="trade-metrics">
-            <div class="metric-row">
-              <span class="metric-label">Entry Price</span>
-              <span class="metric-value">{{ formatCurrency(trade.entryPrice) }}</span>
-            </div>
-            <div class="metric-row">
-              <span class="metric-label">Current Price</span>
-              <span class="metric-value current-price">{{ formatCurrency(trade.currentPrice) }}</span>
-            </div>
-            <div class="metric-row">
-              <span class="metric-label">Quantity</span>
-              <span class="metric-value">{{ trade.quantity }}</span>
-            </div>
-          </div>
+          @for (page of pageNumbers; track page) {
+            @if (page === -1) {
+              <span class="page-ellipsis">...</span>
+            } @else {
+              <button 
+                class="page-btn"
+                [class.active]="currentPage() === page"
+                (click)="goToPage(page)">
+                {{ page }}
+              </button>
+            }
+          }
 
-          <div class="pnl-section" [class.positive]="trade.pnl >= 0" [class.negative]="trade.pnl < 0">
-            <div class="pnl-main">
-              <span class="pnl-label">P&L</span>
-              <span class="pnl-amount">{{ formatCurrency(trade.pnl) }}</span>
-            </div>
-            <div class="pnl-percent">{{ formatPercent(trade.pnlPercent) }}</div>
-          </div>
-
-          <div class="trade-footer">
-            <span class="timestamp">{{ formatDate(trade.timestamp) }}</span>
-            <span class="live-badge">LIVE</span>
-          </div>
-        </div>
-      } @empty {
-        <div class="empty-state">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
-          </svg>
-          <p>No active trades at the moment</p>
+          <button 
+            class="page-btn"
+            [disabled]="currentPage() === totalPages()"
+            (click)="nextPage()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </svg>
+          </button>
         </div>
       }
     </div>
-  </section>
 
-  <!-- Recent Closed Trades -->
-  @if (closedTrades().length > 0) {
-    <section class="closed-trades-section">
-      <div class="section-header">
-        <h2>Recently Closed</h2>
-        <span class="badge">{{ closedTrades().length }} trades</span>
-      </div>
-
-      <div class="closed-trades-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Model</th>
-              <th>Symbol</th>
-              <th>Side</th>
-              <th>Qty</th>
-              <th>Entry</th>
-              <th>Exit</th>
-              <th>P&L</th>
-              <th>P&L %</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (trade of closedTrades(); track trade.id) {
-              <tr>
-                <td class="time">{{ formatDate(trade.timestamp) }}</td>
-                <td class="model-name">{{ getModelName(trade.modelId) }}</td>
-                <td class="symbol">{{ trade.symbol }}</td>
-                <td>
-                  <span class="side-badge small" [class.buy]="trade.side === 'BUY'" 
-                        [class.sell]="trade.side === 'SELL'">
-                    {{ trade.side }}
-                  </span>
-                </td>
-                <td>{{ trade.quantity }}</td>
-                <td>{{ formatCurrency(trade.entryPrice) }}</td>
-                <td>{{ formatCurrency(trade.exitPrice || 0) }}</td>
-                <td [class.positive]="trade.pnl >= 0" [class.negative]="trade.pnl < 0">
-                  {{ formatCurrency(trade.pnl) }}
-                </td>
-                <td [class.positive]="trade.pnlPercent >= 0" [class.negative]="trade.pnlPercent < 0">
-                  {{ formatPercent(trade.pnlPercent) }}
-                </td>
-              </tr>
+    <!-- Trade Detail (Right Pane) -->
+    @if (selectedTrade(); as trade) {
+      <div class="trade-detail">
+        <div class="trade-detail-header">
+          <div class="detail-header-left">
+            <h2 class="detail-symbol">{{ trade.symbol }}</h2>
+            <span class="side-badge large" [class.buy]="trade.side === 'BUY'" 
+                  [class.sell]="trade.side === 'SELL'">
+              {{ trade.side }}
+            </span>
+            @if (trade.status === 'OPEN') {
+              <span class="live-badge">LIVE</span>
+            } @else {
+              <span class="closed-badge">CLOSED</span>
             }
-          </tbody>
-        </table>
-      </div>
-    </section>
-  }
-</div>
+          </div>
+          <div class="detail-header-right">
+            <div class="detail-pnl" [class.positive]="trade.pnl >= 0" [class.negative]="trade.pnl < 0">
+              <div class="pnl-amount">{{ formatCurrency(trade.pnl) }}</div>
+              <div class="pnl-percent">{{ formatPercent(trade.pnlPercent) }}</div>
+            </div>
+          </div>
+        </div>
 
+        <div class="detail-sections">
+          <!-- Metrics and Conditions (Priority Section) -->
+          <section class="detail-section metrics-section">
+            <app-trade-metrics [metrics]="tradeMetrics()"></app-trade-metrics>
+          </section>
+
+          <!-- Performance Metrics -->
+          <section class="detail-section">
+            <h3 class="section-title">Performance Metrics</h3>
+            <div class="metrics-cards">
+              <div class="metric-card" [class.positive]="trade.pnl >= 0" [class.negative]="trade.pnl < 0">
+                <div class="metric-card-label">Profit & Loss</div>
+                <div class="metric-card-value">{{ formatCurrency(trade.pnl) }}</div>
+                <div class="metric-card-subtitle">{{ formatPercent(trade.pnlPercent) }}</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-card-label">Position Value</div>
+                <div class="metric-card-value">{{ formatCurrency(trade.currentPrice * trade.quantity) }}</div>
+                <div class="metric-card-subtitle">{{ trade.quantity }} shares</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-card-label">Cost Basis</div>
+                <div class="metric-card-value">{{ formatCurrency(trade.entryPrice * trade.quantity) }}</div>
+                <div class="metric-card-subtitle">Initial investment</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Trade Information -->
+          <section class="detail-section">
+            <h3 class="section-title">Trade Information</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Model</span>
+                <span class="detail-value">{{ getModelName(trade.modelId) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Status</span>
+                <span class="detail-value">{{ trade.status }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Quantity</span>
+                <span class="detail-value">{{ trade.quantity }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Entry Time</span>
+                <span class="detail-value">{{ formatDate(trade.timestamp) }}</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Price Information -->
+          <section class="detail-section">
+            <h3 class="section-title">Price Information</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Entry Price</span>
+                <span class="detail-value highlight">{{ formatCurrency(trade.entryPrice) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Current Price</span>
+                <span class="detail-value highlight current-price">{{ formatCurrency(trade.currentPrice) }}</span>
+              </div>
+              @if (trade.exitPrice) {
+                <div class="detail-item">
+                  <span class="detail-label">Exit Price</span>
+                  <span class="detail-value highlight">{{ formatCurrency(trade.exitPrice) }}</span>
+                </div>
+              }
+              <div class="detail-item">
+                <span class="detail-label">Price Change</span>
+                <span class="detail-value" [class.positive]="trade.currentPrice >= trade.entryPrice" 
+                      [class.negative]="trade.currentPrice < trade.entryPrice">
+                  {{ formatCurrency(trade.currentPrice - trade.entryPrice) }}
+                </span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    } @else {
+      <div class="trade-detail trade-detail-empty">
+        <div class="empty-detail">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+          </svg>
+          <h3>No Trade Selected</h3>
+          <p>Select a trade from the list to view details</p>
+        </div>
+      </div>
+    }
+  </div>
+</div>

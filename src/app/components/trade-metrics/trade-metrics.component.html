@@ -1,0 +1,78 @@
+@if (data(); as metrics) {
+  <div class="metrics-container">
+    <!-- Strategy Conditions Section -->
+    <div class="conditions-section">
+      <h3 class="section-title">Strategy Exit Conditions</h3>
+      <div class="conditions-grid">
+        @for (condition of metrics.strategyConditions; track condition.id) {
+          <div class="condition-card" [class.met]="condition.isMet" [class.unmet]="!condition.isMet">
+            <div class="condition-header">
+              <div class="condition-icon" [class.met]="condition.isMet">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path [attr.d]="getConditionIcon(condition.type)"/>
+                </svg>
+              </div>
+              <div class="condition-status">
+                @if (condition.isMet) {
+                  <span class="status-badge met">✓ MET</span>
+                } @else {
+                  <span class="status-badge unmet">○ NOT MET</span>
+                }
+              </div>
+            </div>
+            <div class="condition-body">
+              <div class="condition-description">{{ condition.description }}</div>
+              <div class="condition-values">
+                <div class="value-item">
+                  <span class="value-label">Current:</span>
+                  <span class="value-number">{{ condition.currentValue }}</span>
+                </div>
+                <div class="value-operator">{{ condition.operator }}</div>
+                <div class="value-item">
+                  <span class="value-label">Target:</span>
+                  <span class="value-number">{{ condition.targetValue }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="no-conditions">
+            <p>No exit conditions defined</p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Metric Tabs -->
+    <div class="metrics-tabs-section">
+      <div class="tabs-container">
+        <div class="tabs">
+          @for (metric of metrics.availableMetrics; track metric.id) {
+            <button
+              class="tab"
+              [class.active]="selectedMetricId() === metric.id"
+              (click)="selectMetric(metric.id)">
+              {{ metric.name }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Chart Display -->
+      <div class="chart-container">
+        @if (selectedMetric(); as metric) {
+          <app-trade-chart [chartData]="metric.chartData"></app-trade-chart>
+        } @else {
+          <div class="no-chart">
+            <p>Select a metric to view chart</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="no-data">
+    <p>No metrics available</p>
+  </div>
+}
+
