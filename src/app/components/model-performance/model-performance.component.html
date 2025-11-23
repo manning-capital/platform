@@ -4,34 +4,63 @@
     <p class="subtitle">Deep dive into quantitative model metrics and trade history</p>
   </header>
 
-  <div class="performance-content">
-    <!-- Model Selector -->
-    <aside class="model-sidebar">
-      <h3>Models</h3>
-      <div class="model-list">
-        @for (model of models(); track model.id) {
-          <div 
-            class="model-item" 
-            [class.active]="model.id === selectedModelId()"
-            [class.model-active]="model.status === 'ACTIVE'"
-            (click)="selectModel(model.id)">
-            <div class="model-item-header">
-              <span class="model-name">{{ model.name }}</span>
-              <span class="status-dot" [class.active]="model.status === 'ACTIVE'"></span>
+  <!-- Card Grid View -->
+  @if (viewMode() === 'list') {
+    <div class="models-grid">
+      @for (model of models(); track model.id) {
+        <div class="model-card" (click)="selectModel(model.id)">
+          <div class="model-card-header">
+            <div class="model-card-title">
+              <h3>{{ model.name }}</h3>
+              <span class="model-card-strategy">{{ model.strategy }}</span>
             </div>
-            <div class="model-item-stats">
-              <span class="pnl" [class.positive]="model.totalPnL >= 0">
-                {{ formatCurrency(model.totalPnL) }}
-              </span>
-              <span class="win-rate">{{ model.winRate }}% WR</span>
+            <div class="model-card-status" [class.active]="model.status === 'ACTIVE'" [class.paused]="model.status === 'PAUSED'">
+              <span class="status-indicator"></span>
+              {{ model.status }}
             </div>
           </div>
-        }
-      </div>
-    </aside>
 
-    <!-- Model Details -->
-    @if (selectedModel(); as model) {
+          <div class="model-card-metrics">
+            <div class="model-card-metric primary">
+              <span class="metric-label">Total P&L</span>
+              <span class="metric-value" [class.positive]="model.totalPnL >= 0" [class.negative]="model.totalPnL < 0">
+                {{ formatCurrency(model.totalPnL) }}
+              </span>
+            </div>
+
+            <div class="model-card-metrics-row">
+              <div class="model-card-metric">
+                <span class="metric-label">Win Rate</span>
+                <span class="metric-value">{{ model.winRate }}%</span>
+              </div>
+              <div class="model-card-metric">
+                <span class="metric-label">Sharpe</span>
+                <span class="metric-value">{{ model.sharpeRatio }}</span>
+              </div>
+              <div class="model-card-metric">
+                <span class="metric-label">Trades</span>
+                <span class="metric-value">{{ model.totalTrades }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="model-card-footer">
+            <span class="view-details">View Details →</span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Detail View -->
+  @if (viewMode() === 'detail' && selectedModel(); as model) {
+    <div class="model-detail-view">
+      <button class="back-button" (click)="backToList()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+        </svg>
+        Back to Models
+      </button>
       <div class="model-details">
         <!-- Model Info Header -->
         <div class="model-info-card">
@@ -183,7 +212,7 @@
           </div>
         </div>
       </div>
-    }
-  </div>
+    </div>
+  }
 </div>
 

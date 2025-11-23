@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TradingService } from '../../services/trading.service';
 
@@ -12,7 +12,9 @@ export class ModelPerformanceComponent {
   private tradingService = inject(TradingService);
   
   protected models = this.tradingService.models$;
-  protected selectedModelId = computed(() => this.models()[0]?.id || '');
+  protected viewMode = signal<'list' | 'detail'>('list');
+  protected selectedModelId = signal<string>('');
+  
   protected selectedModel = computed(() => 
     this.tradingService.getModelById(this.selectedModelId())
   );
@@ -21,8 +23,12 @@ export class ModelPerformanceComponent {
   );
 
   protected selectModel(modelId: string): void {
-    // In a real app, this would update a signal
-    console.log('Selected model:', modelId);
+    this.selectedModelId.set(modelId);
+    this.viewMode.set('detail');
+  }
+
+  protected backToList(): void {
+    this.viewMode.set('list');
   }
 
   protected formatCurrency(value: number): string {
