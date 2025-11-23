@@ -56,6 +56,7 @@
           <option value="ALL">All</option>
           <option value="BUY">Buy</option>
           <option value="SELL">Sell</option>
+          <option value="COMPOUND">Compound</option>
         </select>
       </div>
 
@@ -98,11 +99,17 @@
             [class.closed]="trade.status === 'CLOSED'"
             (click)="selectTrade(trade)">
             <div class="trade-list-item-header">
-              <div class="trade-symbol">{{ trade.symbol }}</div>
-              <span class="side-badge small" [class.buy]="trade.side === 'BUY'" 
-                    [class.sell]="trade.side === 'SELL'">
-                {{ trade.side }}
-              </span>
+              <div class="trade-symbol">
+                {{ getTradeDisplaySymbol(trade) }}
+              </div>
+              @if (isCompoundTrade(trade)) {
+                <span class="side-badge small compound">COMPOUND</span>
+              } @else {
+                <span class="side-badge small" [class.buy]="getPrimaryPosition(trade).side === 'BUY'" 
+                      [class.sell]="getPrimaryPosition(trade).side === 'SELL'">
+                  {{ getPrimaryPosition(trade).side }}
+                </span>
+              }
             </div>
             <div class="trade-list-item-body">
               <div class="trade-model-name">{{ getModelName(trade.modelId) }}</div>
@@ -171,11 +178,17 @@
       <div class="trade-detail">
         <div class="trade-detail-header">
           <div class="detail-header-left">
-            <h2 class="detail-symbol">{{ trade.symbol }}</h2>
-            <span class="side-badge large" [class.buy]="trade.side === 'BUY'" 
-                  [class.sell]="trade.side === 'SELL'">
-              {{ trade.side }}
-            </span>
+            <h2 class="detail-symbol">
+              {{ getTradeDisplaySymbol(trade) }}
+            </h2>
+            @if (isCompoundTrade(trade)) {
+              <span class="side-badge large compound">COMPOUND</span>
+            } @else {
+              <span class="side-badge large" [class.buy]="getPrimaryPosition(trade).side === 'BUY'" 
+                    [class.sell]="getPrimaryPosition(trade).side === 'SELL'">
+                {{ getPrimaryPosition(trade).side }}
+              </span>
+            }
             @if (trade.status === 'OPEN') {
               <span class="live-badge">LIVE</span>
             } @else {
@@ -191,10 +204,91 @@
         </div>
 
         <div class="detail-sections">
+          <!-- Positions Section (for compound trades) -->
+          @if (isCompoundTrade(trade)) {
+            <section class="detail-section positions-section">
+              <h3 class="section-title">Positions</h3>
+              <div class="positions-table-container">
+                <table class="positions-table">
+                  <thead>
+                    <tr>
+                      <th>Pair</th>
+                      <th>Side</th>
+                      <th>Quantity</th>
+                      <th>Entry Price</th>
+                      <th>Current Price</th>
+                      <th>P&L</th>
+                      <th>P&L %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (position of trade.positions; track position.id) {
+                      <tr>
+                        <td class="position-pair-cell">
+                          <span class="position-from">{{ position.fromAsset }}</span>
+                          <span class="position-arrow">→</span>
+                          <span class="position-to">{{ position.toAsset }}</span>
+                        </td>
+                        <td>
+                          <span class="side-badge small" [class.buy]="position.side === 'BUY'" 
+                                [class.sell]="position.side === 'SELL'">
+                            {{ position.side }}
+                          </span>
+                        </td>
+                        <td>{{ position.quantity }}</td>
+                        <td>{{ formatCurrency(position.entryPrice) }}</td>
+                        <td>{{ formatCurrency(position.currentPrice) }}</td>
+                        <td [class.positive]="position.pnl >= 0" [class.negative]="position.pnl < 0">
+                          {{ formatCurrency(position.pnl) }}
+                        </td>
+                        <td [class.positive]="position.pnlPercent >= 0" [class.negative]="position.pnlPercent < 0">
+                          {{ formatPercent(position.pnlPercent) }}
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          }
+
           <!-- Metrics and Conditions (Priority Section) -->
           <section class="detail-section metrics-section">
             <app-trade-metrics [metrics]="tradeMetrics()"></app-trade-metrics>
           </section>
+
+          <!-- Model Parameters -->
+          @if (modelParameters(); as params) {
+            <section class="detail-section">
+              <h3 class="section-title">Model Parameters</h3>
+              <div class="parameters-grid">
+                @for (param of params.parameters; track param.name) {
+                  <div class="parameter-card">
+                    <div class="parameter-header">
+                      <span class="parameter-name">{{ param.name }}</span>
+                      @if (param.description) {
+                        <span class="parameter-description">{{ param.description }}</span>
+                      }
+                    </div>
+                    <div class="parameter-value">
+                      @if (typeof param.value === 'number') {
+                        @if (param.unit === '$') {
+                          <span class="value-number">{{ formatCurrency(param.value) }}</span>
+                        } @else {
+                          <span class="value-number">{{ param.value.toFixed(4) }}</span>
+                          @if (param.unit) {
+                            <span class="value-unit">{{ param.unit }}</span>
+                          }
+                        }
+                      } @else {
+                        <span class="value-text">{{ param.value }}</span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </section>
+          }
 
           <!-- Performance Metrics -->
           <section class="detail-section">
@@ -207,13 +301,27 @@
               </div>
               <div class="metric-card">
                 <div class="metric-card-label">Position Value</div>
-                <div class="metric-card-value">{{ formatCurrency(trade.currentPrice * trade.quantity) }}</div>
-                <div class="metric-card-subtitle">{{ trade.quantity }} shares</div>
+                @if (isCompoundTrade(trade)) {
+                  <div class="metric-card-value">{{ formatCurrency(getTotalPositionValue(trade)) }}</div>
+                  <div class="metric-card-subtitle">{{ trade.positions.length }} position(s)</div>
+                } @else {
+                  @if (getPrimaryPosition(trade); as pos) {
+                    <div class="metric-card-value">{{ formatCurrency(pos.currentPrice * pos.quantity) }}</div>
+                    <div class="metric-card-subtitle">{{ pos.quantity }} shares</div>
+                  }
+                }
               </div>
               <div class="metric-card">
                 <div class="metric-card-label">Cost Basis</div>
-                <div class="metric-card-value">{{ formatCurrency(trade.entryPrice * trade.quantity) }}</div>
-                <div class="metric-card-subtitle">Initial investment</div>
+                @if (isCompoundTrade(trade)) {
+                  <div class="metric-card-value">{{ formatCurrency(getTotalCostBasis(trade)) }}</div>
+                  <div class="metric-card-subtitle">Initial investment</div>
+                } @else {
+                  @if (getPrimaryPosition(trade); as pos) {
+                    <div class="metric-card-value">{{ formatCurrency(pos.entryPrice * pos.quantity) }}</div>
+                    <div class="metric-card-subtitle">Initial investment</div>
+                  }
+                }
               </div>
             </div>
           </section>
@@ -230,10 +338,19 @@
                 <span class="detail-label">Status</span>
                 <span class="detail-value">{{ trade.status }}</span>
               </div>
-              <div class="detail-item">
-                <span class="detail-label">Quantity</span>
-                <span class="detail-value">{{ trade.quantity }}</span>
-              </div>
+              @if (!isCompoundTrade(trade)) {
+                @if (getPrimaryPosition(trade); as pos) {
+                  <div class="detail-item">
+                    <span class="detail-label">Quantity</span>
+                    <span class="detail-value">{{ pos.quantity }}</span>
+                  </div>
+                }
+              } @else {
+                <div class="detail-item">
+                  <span class="detail-label">Positions</span>
+                  <span class="detail-value">{{ trade.positions.length }}</span>
+                </div>
+              }
               <div class="detail-item">
                 <span class="detail-label">Entry Time</span>
                 <span class="detail-value">{{ formatDate(trade.timestamp) }}</span>
@@ -242,32 +359,36 @@
           </section>
 
           <!-- Price Information -->
-          <section class="detail-section">
-            <h3 class="section-title">Price Information</h3>
-            <div class="detail-grid">
-              <div class="detail-item">
-                <span class="detail-label">Entry Price</span>
-                <span class="detail-value highlight">{{ formatCurrency(trade.entryPrice) }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Current Price</span>
-                <span class="detail-value highlight current-price">{{ formatCurrency(trade.currentPrice) }}</span>
-              </div>
-              @if (trade.exitPrice) {
-                <div class="detail-item">
-                  <span class="detail-label">Exit Price</span>
-                  <span class="detail-value highlight">{{ formatCurrency(trade.exitPrice) }}</span>
+          @if (!isCompoundTrade(trade)) {
+            <section class="detail-section">
+              <h3 class="section-title">Price Information</h3>
+              @if (getPrimaryPosition(trade); as pos) {
+                <div class="detail-grid">
+                  <div class="detail-item">
+                    <span class="detail-label">Entry Price</span>
+                    <span class="detail-value highlight">{{ formatCurrency(pos.entryPrice) }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Current Price</span>
+                    <span class="detail-value highlight current-price">{{ formatCurrency(pos.currentPrice) }}</span>
+                  </div>
+                  @if (pos.exitPrice) {
+                    <div class="detail-item">
+                      <span class="detail-label">Exit Price</span>
+                      <span class="detail-value highlight">{{ formatCurrency(pos.exitPrice) }}</span>
+                    </div>
+                  }
+                  <div class="detail-item">
+                    <span class="detail-label">Price Change</span>
+                    <span class="detail-value" [class.positive]="pos.currentPrice >= pos.entryPrice" 
+                          [class.negative]="pos.currentPrice < pos.entryPrice">
+                      {{ formatCurrency(pos.currentPrice - pos.entryPrice) }}
+                    </span>
+                  </div>
                 </div>
               }
-              <div class="detail-item">
-                <span class="detail-label">Price Change</span>
-                <span class="detail-value" [class.positive]="trade.currentPrice >= trade.entryPrice" 
-                      [class.negative]="trade.currentPrice < trade.entryPrice">
-                  {{ formatCurrency(trade.currentPrice - trade.entryPrice) }}
-                </span>
-              </div>
-            </div>
-          </section>
+            </section>
+          }
         </div>
       </div>
     } @else {

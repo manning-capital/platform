@@ -1,11 +1,27 @@
-export interface Trade {
+export interface Position {
   id: string;
-  modelId: string;
-  symbol: string;
+  fromAsset: string;
+  toAsset: string;
   side: 'BUY' | 'SELL';
   quantity: number;
   entryPrice: number;
   currentPrice: number;
+  exitPrice?: number;
+  pnl: number;
+  pnlPercent: number;
+}
+
+export interface Trade {
+  id: string;
+  modelId: string;
+  type: 'simple' | 'compound';
+  positions: Position[];
+  // Legacy fields for backward compatibility (deprecated)
+  symbol?: string;
+  side?: 'BUY' | 'SELL';
+  quantity?: number;
+  entryPrice?: number;
+  currentPrice?: number;
   exitPrice?: number;
   status: 'OPEN' | 'CLOSED' | 'PENDING';
   timestamp: Date;
@@ -78,5 +94,17 @@ export interface DashboardStats {
   totalPnL: number;
   todayPnL: number;
   winRate: number;
+}
+
+export interface ModelParameter {
+  name: string;
+  value: number | string;
+  unit?: string;
+  description?: string;
+}
+
+export interface ModelParameters {
+  strategy: string;
+  parameters: ModelParameter[];
 }
 

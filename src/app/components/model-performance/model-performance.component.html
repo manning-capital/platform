@@ -161,7 +161,15 @@
 
         <!-- Trade History -->
         <div class="trade-history">
-          <h3>Trade History</h3>
+          <div class="trade-history-header">
+            <h3>Trade History</h3>
+            <a 
+              [routerLink]="getViewAllTradesLink()" 
+              [queryParams]="getViewAllTradesQueryParams()"
+              class="view-all-link">
+              View All Trades →
+            </a>
+          </div>
           <div class="trades-table-container">
             <table class="trades-table">
               <thead>
@@ -179,16 +187,28 @@
               <tbody>
                 @for (trade of modelTrades(); track trade.id) {
                   <tr>
-                    <td class="symbol">{{ trade.symbol }}</td>
-                    <td>
-                      <span class="side-badge" [class.buy]="trade.side === 'BUY'" 
-                            [class.sell]="trade.side === 'SELL'">
-                        {{ trade.side }}
-                      </span>
+                    <td class="symbol">
+                      {{ getTradeDisplaySymbol(trade) }}
                     </td>
-                    <td>{{ trade.quantity }}</td>
-                    <td>{{ formatCurrency(trade.entryPrice) }}</td>
-                    <td>{{ formatCurrency(trade.currentPrice) }}</td>
+                    <td>
+                      @if (isCompoundTrade(trade)) {
+                        <span class="side-badge compound">COMPOUND</span>
+                      } @else {
+                        <span class="side-badge" [class.buy]="getPrimaryPosition(trade).side === 'BUY'" 
+                              [class.sell]="getPrimaryPosition(trade).side === 'SELL'">
+                          {{ getPrimaryPosition(trade).side }}
+                        </span>
+                      }
+                    </td>
+                    <td>
+                      @if (isCompoundTrade(trade)) {
+                        {{ trade.positions.length }} pos
+                      } @else {
+                        {{ getPrimaryPosition(trade).quantity }}
+                      }
+                    </td>
+                    <td>{{ formatCurrency(getPrimaryPosition(trade).entryPrice) }}</td>
+                    <td>{{ formatCurrency(getPrimaryPosition(trade).currentPrice) }}</td>
                     <td [class.positive]="trade.pnl >= 0" [class.negative]="trade.pnl < 0">
                       {{ formatCurrency(trade.pnl) }}
                     </td>
@@ -209,6 +229,46 @@
                 }
               </tbody>
             </table>
+          </div>
+          
+          <!-- Pagination Controls -->
+          @if (totalPages() > 1) {
+            <div class="pagination">
+              <button 
+                class="page-btn"
+                [disabled]="currentPage() === 1"
+                (click)="previousPage()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                </svg>
+              </button>
+
+              @for (page of pageNumbers; track page) {
+                @if (page === -1) {
+                  <span class="page-ellipsis">...</span>
+                } @else {
+                  <button 
+                    class="page-btn"
+                    [class.active]="currentPage() === page"
+                    (click)="goToPage(page)">
+                    {{ page }}
+                  </button>
+                }
+              }
+
+              <button 
+                class="page-btn"
+                [disabled]="currentPage() === totalPages()"
+                (click)="nextPage()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                </svg>
+              </button>
+            </div>
+          }
+          
+          <div class="pagination-info">
+            Showing {{ modelTrades().length }} of {{ allModelTrades().length }} trades
           </div>
         </div>
       </div>

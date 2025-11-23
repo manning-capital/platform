@@ -124,7 +124,7 @@
     <section class="trades-section">
       <div class="section-header">
         <h2>Recent Trades</h2>
-        <a href="#" class="view-all">View All →</a>
+        <a routerLink="/live-trades" class="view-all">View All →</a>
       </div>
 
       <div class="trades-table">
@@ -144,15 +144,21 @@
             @for (trade of recentTrades(); track trade.id) {
               <tr>
                 <td class="time">{{ formatTime(trade.timestamp) }}</td>
-                <td class="symbol">{{ trade.symbol }}</td>
-                <td>
-                  <span class="side-badge" [class.buy]="trade.side === 'BUY'" 
-                        [class.sell]="trade.side === 'SELL'">
-                    {{ trade.side }}
-                  </span>
+                <td class="symbol">
+                  {{ getTradeDisplaySymbol(trade) }}
                 </td>
-                <td>{{ formatCurrency(trade.entryPrice) }}</td>
-                <td>{{ formatCurrency(trade.currentPrice) }}</td>
+                <td>
+                  @if (isCompoundTrade(trade)) {
+                    <span class="side-badge compound">COMPOUND</span>
+                  } @else {
+                    <span class="side-badge" [class.buy]="getPrimaryPosition(trade).side === 'BUY'" 
+                          [class.sell]="getPrimaryPosition(trade).side === 'SELL'">
+                      {{ getPrimaryPosition(trade).side }}
+                    </span>
+                  }
+                </td>
+                <td>{{ formatCurrency(getPrimaryPosition(trade).entryPrice) }}</td>
+                <td>{{ formatCurrency(getPrimaryPosition(trade).currentPrice) }}</td>
                 <td>
                   <div class="pnl" [class.positive]="trade.pnl >= 0" 
                        [class.negative]="trade.pnl < 0">

@@ -1,10 +1,11 @@
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { TradingService } from '../../services/trading.service';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -19,6 +20,18 @@ export class DashboardComponent {
       b.timestamp.getTime() - a.timestamp.getTime()
     );
   });
+
+  protected isCompoundTrade(trade: any): boolean {
+    return this.tradingService.isCompoundTrade(trade);
+  }
+
+  protected getTradeDisplaySymbol(trade: any): string {
+    return this.tradingService.getTradeDisplaySymbol(trade);
+  }
+
+  protected getPrimaryPosition(trade: any) {
+    return this.tradingService.getPrimaryPosition(trade);
+  }
 
   protected toggleModel(modelId: string): void {
     this.tradingService.toggleModelStatus(modelId);

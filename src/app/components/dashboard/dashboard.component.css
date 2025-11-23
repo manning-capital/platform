@@ -334,6 +334,12 @@ tr:hover {
   color: #ef4444;
 }
 
+.side-badge.compound {
+  background: rgba(102, 126, 234, 0.2);
+  color: var(--accent-color-solid);
+  border: 1px solid rgba(102, 126, 234, 0.5);
+}
+
 .pnl {
   display: flex;
   flex-direction: column;
@@ -373,6 +379,20 @@ tr:hover {
 .status-badge.closed {
   background: rgba(139, 146, 176, 0.2);
   color: #8b92b0;
+}
+
+.compound-badge-small {
+  display: inline-block;
+  padding: 0.125rem 0.375rem;
+  background: var(--accent-color);
+  color: var(--bg-primary);
+  border-radius: 3px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-left: 0.375rem;
+  vertical-align: middle;
 }
 
 @media (max-width: 768px) {
