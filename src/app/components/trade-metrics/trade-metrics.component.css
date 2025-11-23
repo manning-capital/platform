@@ -180,7 +180,7 @@
 
 .tab.active {
   color: var(--text-primary);
-  border-bottom-color: #667eea;
+  border-bottom-color: var(--accent-color-solid);
   font-weight: 600;
 }
 

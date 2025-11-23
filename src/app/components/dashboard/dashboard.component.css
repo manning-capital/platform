@@ -64,19 +64,19 @@
 }
 
 .stat-icon.total-pnl {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #f6a055;
 }
 
 .stat-icon.today-pnl {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: #e9d5a0;
 }
 
 .stat-icon.models {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: #49694c;
 }
 
 .stat-icon.trades {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  background: #a8c4a1;
 }
 
 .stat-content {
@@ -122,8 +122,8 @@
 }
 
 .badge {
-  background: rgba(102, 126, 234, 0.2);
-  color: #667eea;
+  background: var(--hover-bg);
+  color: var(--accent-color-solid);
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-size: 0.875rem;
@@ -131,14 +131,14 @@
 }
 
 .view-all {
-  color: #667eea;
+  color: var(--accent-color-solid);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease;
 }
 
 .view-all:hover {
-  color: #764ba2;
+  color: var(--text-primary);
 }
 
 .models-grid {
@@ -313,7 +313,7 @@ tr:hover {
 
 .symbol {
   font-weight: 600;
-  color: #667eea;
+  color: var(--accent-color-solid);
 }
 
 .side-badge {
@@ -366,8 +366,8 @@ tr:hover {
 }
 
 .status-badge.open {
-  background: rgba(59, 130, 246, 0.2);
-  color: #3b82f6;
+  background: rgba(156, 163, 175, 0.2);
+  color: var(--accent-color-solid);
 }
 
 .status-badge.closed {

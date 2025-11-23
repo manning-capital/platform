@@ -11,55 +11,65 @@
 :root[data-theme="dark"],
 :root {
   /* Backgrounds */
-  --bg-primary: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
-  --sidebar-bg: rgba(255, 255, 255, 0.03);
-  --card-bg: rgba(255, 255, 255, 0.05);
-  --hover-bg: rgba(255, 255, 255, 0.02);
-  --table-header-bg: rgba(255, 255, 255, 0.05);
+  --bg-primary: linear-gradient(135deg, #1a1f1a 0%, #12140f 100%);
+  --sidebar-bg: rgba(73, 105, 76, 0.1);
+  --card-bg: rgba(73, 105, 76, 0.12);
+  --hover-bg: rgba(73, 105, 76, 0.18);
+  --table-header-bg: rgba(73, 105, 76, 0.12);
   
   /* Text Colors */
-  --text-primary: #ffffff;
-  --text-secondary: #8b92b0;
+  --text-primary: #e9d5a0;
+  --text-secondary: #a8c4a1;
   
   /* Borders */
-  --border-color: rgba(255, 255, 255, 0.1);
+  --border-color: rgba(73, 105, 76, 0.25);
   
   /* Accents */
-  --accent-color: rgba(102, 126, 234, 0.5);
-  --nav-active-bg: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+  --accent-color: rgba(168, 196, 161, 0.5);
+  --accent-color-solid: #a8c4a1;
+  --nav-active-bg: rgba(73, 105, 76, 0.25);
+  
+  /* Chart Colors */
+  --chart-primary: #f6a055;
+  --chart-secondary: #c16149;
   
   /* Status Colors */
-  --positive-color: #10b981;
-  --negative-color: #ef4444;
-  --warning-color: #f59e0b;
-  --info-color: #3b82f6;
+  --positive-color: #a8c4a1;
+  --negative-color: #c16149;
+  --warning-color: #f6a055;
+  --info-color: #e9d5a0;
 }
 
 /* Light Theme */
 :root[data-theme="light"] {
-  /* Backgrounds - Cream/Warm Tones */
-  --bg-primary: linear-gradient(135deg, #faf7f0 0%, #f5f1e8 100%);
-  --sidebar-bg: #f9f6ed;
+  /* Backgrounds - Warm cream tones */
+  --bg-primary: linear-gradient(135deg, #fdfbf7 0%, #f8f3e8 100%);
+  --sidebar-bg: #f2ead8;
   --card-bg: #ffffff;
-  --hover-bg: #f0ebe0;
-  --table-header-bg: #f5f1e8;
+  --hover-bg: #f5efe3;
+  --table-header-bg: #faf6ed;
   
   /* Text Colors */
-  --text-primary: #2c2416;
-  --text-secondary: #6b5d4f;
+  --text-primary: #2c2d23;
+  --text-secondary: #49694c;
   
   /* Borders */
-  --border-color: #e8dfc8;
+  --border-color: #e3d9c4;
   
-  /* Accents - Warm Golden/Brown tones */
-  --accent-color: rgba(184, 134, 84, 0.6);
-  --nav-active-bg: linear-gradient(135deg, rgba(211, 161, 96, 0.2) 0%, rgba(184, 134, 84, 0.2) 100%);
+  /* Accents */
+  --accent-color: rgba(73, 105, 76, 0.5);
+  --accent-color-solid: #49694c;
+  --nav-active-bg: rgba(168, 196, 161, 0.2);
+  
+  /* Chart Colors */
+  --chart-primary: #49694c;
+  --chart-secondary: #f6a055;
   
   /* Status Colors - Adjusted for light background */
-  --positive-color: #059669;
-  --negative-color: #dc2626;
-  --warning-color: #d97706;
-  --info-color: #2563eb;
+  --positive-color: #49694c;
+  --negative-color: #c16149;
+  --warning-color: #f6a055;
+  --info-color: #a8c4a1;
 }
 
 html, body {
@@ -98,20 +108,20 @@ body {
 
 /* Dark theme scrollbar */
 :root[data-theme="dark"] ::-webkit-scrollbar-thumb {
-  background: rgba(102, 126, 234, 0.5);
+  background: rgba(168, 196, 161, 0.5);
 }
 
 :root[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(102, 126, 234, 0.7);
+  background: rgba(168, 196, 161, 0.7);
 }
 
 /* Light theme scrollbar */
 :root[data-theme="light"] ::-webkit-scrollbar-thumb {
-  background: rgba(184, 134, 84, 0.4);
+  background: rgba(73, 105, 76, 0.4);
 }
 
 :root[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(184, 134, 84, 0.6);
+  background: rgba(73, 105, 76, 0.6);
 }
 
 /* Selection */

@@ -46,11 +46,13 @@
 }
 
 .chart-line {
-  filter: drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3));
+  stroke: var(--chart-primary);
+  filter: drop-shadow(0 2px 4px rgba(156, 163, 175, 0.3));
 }
 
 .chart-point {
-  filter: drop-shadow(0 2px 4px rgba(102, 126, 234, 0.4));
+  fill: var(--chart-primary);
+  filter: drop-shadow(0 2px 4px rgba(156, 163, 175, 0.4));
   transition: r 0.2s ease;
 }
 

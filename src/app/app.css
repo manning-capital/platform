@@ -46,7 +46,7 @@
 .logo svg {
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--chart-primary);
   padding: 6px;
   border-radius: 8px;
 }
@@ -99,9 +99,9 @@
 }
 
 .nav-item.active {
-  background: var(--nav-active-bg, linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%));
-  color: var(--text-primary, #ffffff);
-  border: 1px solid var(--accent-color, rgba(102, 126, 234, 0.5));
+  background: var(--nav-active-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--accent-color);
 }
 
 .nav-item .live-indicator {
@@ -174,7 +174,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--chart-primary);
   display: flex;
   align-items: center;
   justify-content: center;

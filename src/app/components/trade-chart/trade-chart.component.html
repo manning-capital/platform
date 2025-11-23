@@ -8,13 +8,6 @@
     </div>
 
     <svg [attr.viewBox]="viewBox" preserveAspectRatio="xMidYMid meet" class="chart-svg">
-      <defs>
-        <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
-        </linearGradient>
-      </defs>
-
       <g [attr.transform]="'translate(' + padding.left + ',' + padding.top + ')'">
         <!-- Grid lines -->
         @for (label of yAxisLabels(); track label.value) {
@@ -54,7 +47,6 @@
           [attr.d]="pathData()"
           class="chart-line"
           fill="none"
-          stroke="url(#lineGradient)"
           stroke-width="3"
           stroke-linecap="round"
           stroke-linejoin="round"
@@ -68,7 +60,6 @@
               [attr.cy]="chartHeight() - ((point.value - yAxisLabels()[0].value) / (yAxisLabels()[yAxisLabels().length - 1].value - yAxisLabels()[0].value)) * chartHeight()"
               r="4"
               class="chart-point"
-              fill="#667eea"
             />
           }
         }

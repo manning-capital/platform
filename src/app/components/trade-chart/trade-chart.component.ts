@@ -126,11 +126,11 @@ export class TradeChartComponent {
 
   protected getSignalColor(type: string): string {
     switch (type) {
-      case 'entry': return '#3b82f6';
-      case 'exit': return '#8b5cf6';
-      case 'stopLoss': return '#ef4444';
-      case 'takeProfit': return '#10b981';
-      default: return '#6b7280';
+      case 'entry': return '#a8c4a1';
+      case 'exit': return '#f6a055';
+      case 'stopLoss': return '#c16149';
+      case 'takeProfit': return '#49694c';
+      default: return '#e9d5a0';
     }
   }
 }
