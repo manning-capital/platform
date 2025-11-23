@@ -1,0 +1,177 @@
+<div class="dashboard">
+  <header class="dashboard-header">
+    <h1>Trading Platform</h1>
+    <p class="subtitle">Real-time Quantitative Model Performance</p>
+  </header>
+
+  <!-- Stats Overview -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon total-pnl">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Total P&L</div>
+        <div class="stat-value" [class.positive]="stats().totalPnL >= 0" 
+             [class.negative]="stats().totalPnL < 0">
+          {{ formatCurrency(stats().totalPnL) }}
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon today-pnl">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Today's P&L</div>
+        <div class="stat-value" [class.positive]="stats().todayPnL >= 0" 
+             [class.negative]="stats().todayPnL < 0">
+          {{ formatCurrency(stats().todayPnL) }}
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon models">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Active Models</div>
+        <div class="stat-value">
+          {{ stats().activeModels }} / {{ stats().totalModels }}
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon trades">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Open Trades</div>
+        <div class="stat-value">
+          {{ stats().openTrades }} / {{ stats().totalTrades }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <!-- Quantitative Models -->
+    <section class="models-section">
+      <div class="section-header">
+        <h2>Quantitative Models</h2>
+        <span class="badge">{{ models().length }} Active</span>
+      </div>
+
+      <div class="models-grid">
+        @for (model of models(); track model.id) {
+          <div class="model-card" [class.active]="model.status === 'ACTIVE'">
+            <div class="model-header">
+              <div>
+                <h3>{{ model.name }}</h3>
+                <span class="model-strategy">{{ model.strategy }}</span>
+              </div>
+              <button 
+                class="status-toggle" 
+                [class.active]="model.status === 'ACTIVE'"
+                (click)="toggleModel(model.id)">
+                <span class="status-indicator"></span>
+                {{ model.status }}
+              </button>
+            </div>
+
+            <div class="model-metrics">
+              <div class="metric">
+                <span class="metric-label">Total P&L</span>
+                <span class="metric-value positive">{{ formatCurrency(model.totalPnL) }}</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Win Rate</span>
+                <span class="metric-value">{{ model.winRate }}%</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Sharpe Ratio</span>
+                <span class="metric-value">{{ model.sharpeRatio }}</span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Max Drawdown</span>
+                <span class="metric-value negative">{{ model.maxDrawdown }}%</span>
+              </div>
+            </div>
+
+            <div class="model-footer">
+              <span class="trade-count">{{ model.totalTrades }} trades</span>
+              @if (model.lastTradeAt) {
+                <span class="last-trade">Last: {{ formatTime(model.lastTradeAt) }}</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Recent Trades -->
+    <section class="trades-section">
+      <div class="section-header">
+        <h2>Recent Trades</h2>
+        <a href="#" class="view-all">View All →</a>
+      </div>
+
+      <div class="trades-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Symbol</th>
+              <th>Side</th>
+              <th>Entry</th>
+              <th>Current</th>
+              <th>P&L</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (trade of recentTrades(); track trade.id) {
+              <tr>
+                <td class="time">{{ formatTime(trade.timestamp) }}</td>
+                <td class="symbol">{{ trade.symbol }}</td>
+                <td>
+                  <span class="side-badge" [class.buy]="trade.side === 'BUY'" 
+                        [class.sell]="trade.side === 'SELL'">
+                    {{ trade.side }}
+                  </span>
+                </td>
+                <td>{{ formatCurrency(trade.entryPrice) }}</td>
+                <td>{{ formatCurrency(trade.currentPrice) }}</td>
+                <td>
+                  <div class="pnl" [class.positive]="trade.pnl >= 0" 
+                       [class.negative]="trade.pnl < 0">
+                    <div class="pnl-amount">{{ formatCurrency(trade.pnl) }}</div>
+                    <div class="pnl-percent">{{ formatPercent(trade.pnlPercent) }}</div>
+                  </div>
+                </td>
+                <td>
+                  <span class="status-badge" [class.open]="trade.status === 'OPEN'" 
+                        [class.closed]="trade.status === 'CLOSED'">
+                    {{ trade.status }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+

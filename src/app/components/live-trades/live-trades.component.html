@@ -1,0 +1,179 @@
+<div class="live-trades">
+  <header class="page-header">
+    <h1>Live Trades Monitor</h1>
+    <p class="subtitle">Real-time monitoring of active positions and trade execution</p>
+  </header>
+
+  <!-- Live Stats -->
+  <div class="live-stats">
+    <div class="stat-box total-pnl" [class.positive]="totalPnL() >= 0" [class.negative]="totalPnL() < 0">
+      <div class="stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Total Open P&L</div>
+        <div class="stat-value">{{ formatCurrency(totalPnL()) }}</div>
+      </div>
+      <div class="pulse-ring"></div>
+    </div>
+
+    <div class="stat-box open-positions">
+      <div class="stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Open Positions</div>
+        <div class="stat-value">{{ openTrades().length }}</div>
+      </div>
+    </div>
+
+    <div class="stat-box winning">
+      <div class="stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Winning</div>
+        <div class="stat-value positive">{{ winningTrades() }}</div>
+      </div>
+    </div>
+
+    <div class="stat-box losing">
+      <div class="stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Losing</div>
+        <div class="stat-value negative">{{ losingTrades() }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Open Trades Table -->
+  <section class="trades-section">
+    <div class="section-header">
+      <h2>
+        <span class="live-indicator"></span>
+        Active Positions
+      </h2>
+      <div class="update-indicator">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+        </svg>
+        Live Updates
+      </div>
+    </div>
+
+    <div class="trades-grid">
+      @for (trade of openTrades(); track trade.id) {
+        <div class="trade-card" [class.profit]="trade.pnl >= 0" [class.loss]="trade.pnl < 0">
+          <div class="trade-card-header">
+            <div class="symbol-info">
+              <h3 class="symbol">{{ trade.symbol }}</h3>
+              <span class="model-tag">{{ getModelName(trade.modelId) }}</span>
+            </div>
+            <span class="side-badge" [class.buy]="trade.side === 'BUY'" 
+                  [class.sell]="trade.side === 'SELL'">
+              {{ trade.side }}
+            </span>
+          </div>
+
+          <div class="trade-metrics">
+            <div class="metric-row">
+              <span class="metric-label">Entry Price</span>
+              <span class="metric-value">{{ formatCurrency(trade.entryPrice) }}</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Current Price</span>
+              <span class="metric-value current-price">{{ formatCurrency(trade.currentPrice) }}</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Quantity</span>
+              <span class="metric-value">{{ trade.quantity }}</span>
+            </div>
+          </div>
+
+          <div class="pnl-section" [class.positive]="trade.pnl >= 0" [class.negative]="trade.pnl < 0">
+            <div class="pnl-main">
+              <span class="pnl-label">P&L</span>
+              <span class="pnl-amount">{{ formatCurrency(trade.pnl) }}</span>
+            </div>
+            <div class="pnl-percent">{{ formatPercent(trade.pnlPercent) }}</div>
+          </div>
+
+          <div class="trade-footer">
+            <span class="timestamp">{{ formatDate(trade.timestamp) }}</span>
+            <span class="live-badge">LIVE</span>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-state">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+          </svg>
+          <p>No active trades at the moment</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Recent Closed Trades -->
+  @if (closedTrades().length > 0) {
+    <section class="closed-trades-section">
+      <div class="section-header">
+        <h2>Recently Closed</h2>
+        <span class="badge">{{ closedTrades().length }} trades</span>
+      </div>
+
+      <div class="closed-trades-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Model</th>
+              <th>Symbol</th>
+              <th>Side</th>
+              <th>Qty</th>
+              <th>Entry</th>
+              <th>Exit</th>
+              <th>P&L</th>
+              <th>P&L %</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (trade of closedTrades(); track trade.id) {
+              <tr>
+                <td class="time">{{ formatDate(trade.timestamp) }}</td>
+                <td class="model-name">{{ getModelName(trade.modelId) }}</td>
+                <td class="symbol">{{ trade.symbol }}</td>
+                <td>
+                  <span class="side-badge small" [class.buy]="trade.side === 'BUY'" 
+                        [class.sell]="trade.side === 'SELL'">
+                    {{ trade.side }}
+                  </span>
+                </td>
+                <td>{{ trade.quantity }}</td>
+                <td>{{ formatCurrency(trade.entryPrice) }}</td>
+                <td>{{ formatCurrency(trade.exitPrice || 0) }}</td>
+                <td [class.positive]="trade.pnl >= 0" [class.negative]="trade.pnl < 0">
+                  {{ formatCurrency(trade.pnl) }}
+                </td>
+                <td [class.positive]="trade.pnlPercent >= 0" [class.negative]="trade.pnlPercent < 0">
+                  {{ formatPercent(trade.pnlPercent) }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</div>
+
