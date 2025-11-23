@@ -7,6 +7,15 @@
   box-sizing: border-box;
 }
 
+/* Color Palette Variables */
+:root {
+  --color-1: #49694c;
+  --color-2: #a8c4a1;
+  --color-3: #e9d5a0;
+  --color-4: #f6a055;
+  --color-5: #c16149;
+}
+
 /* Dark Theme (Default) */
 :root[data-theme="dark"],
 :root {
@@ -18,26 +27,26 @@
   --table-header-bg: rgba(73, 105, 76, 0.12);
   
   /* Text Colors */
-  --text-primary: #e9d5a0;
-  --text-secondary: #a8c4a1;
+  --text-primary: var(--color-3);
+  --text-secondary: var(--color-2);
   
   /* Borders */
   --border-color: rgba(73, 105, 76, 0.25);
   
   /* Accents */
   --accent-color: rgba(168, 196, 161, 0.5);
-  --accent-color-solid: #a8c4a1;
+  --accent-color-solid: var(--color-2);
   --nav-active-bg: rgba(73, 105, 76, 0.25);
   
   /* Chart Colors */
-  --chart-primary: #f6a055;
-  --chart-secondary: #c16149;
+  --chart-primary: var(--color-4);
+  --chart-secondary: var(--color-5);
   
   /* Status Colors */
-  --positive-color: #a8c4a1;
-  --negative-color: #c16149;
-  --warning-color: #f6a055;
-  --info-color: #e9d5a0;
+  --positive-color: var(--color-2);
+  --negative-color: var(--color-5);
+  --warning-color: var(--color-4);
+  --info-color: var(--color-3);
 }
 
 /* Light Theme */
@@ -51,25 +60,25 @@
   
   /* Text Colors */
   --text-primary: #2c2d23;
-  --text-secondary: #49694c;
+  --text-secondary: var(--color-1);
   
   /* Borders */
   --border-color: #e3d9c4;
   
   /* Accents */
   --accent-color: rgba(73, 105, 76, 0.5);
-  --accent-color-solid: #49694c;
+  --accent-color-solid: var(--color-1);
   --nav-active-bg: rgba(168, 196, 161, 0.2);
   
   /* Chart Colors */
-  --chart-primary: #49694c;
-  --chart-secondary: #f6a055;
+  --chart-primary: var(--color-1);
+  --chart-secondary: var(--color-4);
   
   /* Status Colors - Adjusted for light background */
-  --positive-color: #49694c;
-  --negative-color: #c16149;
-  --warning-color: #f6a055;
-  --info-color: #a8c4a1;
+  --positive-color: var(--color-1);
+  --negative-color: var(--color-5);
+  --warning-color: var(--color-4);
+  --info-color: var(--color-2);
 }
 
 html, body {

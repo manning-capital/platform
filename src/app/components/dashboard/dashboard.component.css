@@ -64,19 +64,19 @@
 }
 
 .stat-icon.total-pnl {
-  background: #f6a055;
+  background: var(--color-4);
 }
 
 .stat-icon.today-pnl {
-  background: #e9d5a0;
+  background: var(--color-3);
 }
 
 .stat-icon.models {
-  background: #49694c;
+  background: var(--color-1);
 }
 
 .stat-icon.trades {
-  background: #a8c4a1;
+  background: var(--color-2);
 }
 
 .stat-content {

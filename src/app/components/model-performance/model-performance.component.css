@@ -286,19 +286,19 @@
 }
 
 .metric-icon.profit {
-  background: #a8c4a1;
+  background: var(--color-2);
 }
 
 .metric-icon.accuracy {
-  background: #49694c;
+  background: var(--color-1);
 }
 
 .metric-icon.risk {
-  background: #f6a055;
+  background: var(--color-4);
 }
 
 .metric-icon.drawdown {
-  background: #c16149;
+  background: var(--color-5);
 }
 
 .metric-info {

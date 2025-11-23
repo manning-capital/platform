@@ -12,7 +12,7 @@
 
 /* Sidebar Styles */
 .sidebar {
-  width: 280px;
+  width: 200px;
   background: var(--sidebar-bg, rgba(255, 255, 255, 0.03));
   backdrop-filter: blur(10px);
   border-right: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
@@ -27,28 +27,49 @@
 }
 
 .sidebar-header {
-  padding: 2rem 1.5rem;
+  padding: 1rem 1rem;
   border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  position: relative;
 }
 
 .logo {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary, #ffffff);
 }
 
-.logo svg {
-  width: 32px;
-  height: 32px;
-  background: var(--chart-primary);
-  padding: 6px;
-  border-radius: 8px;
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  align-items: center;
+  text-align: center;
+}
+
+.logo-text-primary {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.logo-text-secondary {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.logo-image {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
 }
 
 .mobile-close {
@@ -58,6 +79,10 @@
   color: var(--text-primary, #ffffff);
   cursor: pointer;
   padding: 0.5rem;
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .mobile-close svg {
@@ -205,7 +230,7 @@
 /* Main Content */
 .main-content {
   flex: 1;
-  margin-left: 280px;
+  margin-left: 200px;
   min-height: 100vh;
 }
 
@@ -240,9 +265,40 @@
 }
 
 .mobile-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mobile-logo .logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  align-items: center;
+  text-align: center;
+}
+
+.mobile-logo .logo-text-primary {
   font-size: 1.125rem;
   font-weight: 700;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.mobile-logo .logo-text-secondary {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.mobile-logo-image {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
 }
 
 .mobile-overlay {

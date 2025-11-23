@@ -3,10 +3,11 @@
   <aside class="sidebar" [class.mobile-open]="mobileMenuOpen">
     <div class="sidebar-header">
       <div class="logo">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
-        </svg>
-        <span>QuantPlatform</span>
+        <img src="/logo.png" alt="Manning Capital" class="logo-image" />
+        <div class="logo-text">
+          <span class="logo-text-primary">Manning</span>
+          <span class="logo-text-secondary">Capital</span>
+        </div>
       </div>
       <button class="mobile-close" (click)="toggleMobileMenu()">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -27,14 +28,14 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
         </svg>
-        <span>Model Performance</span>
+        <span>Models</span>
       </a>
 
       <a routerLink="/live-trades" routerLinkActive="active" class="nav-item" (click)="toggleMobileMenu()">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
         </svg>
-        <span>Live Trades</span>
+        <span>Trades</span>
         <span class="live-indicator"></span>
       </a>
 
@@ -79,7 +80,13 @@
           <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
         </svg>
       </button>
-      <div class="mobile-logo">QuantPlatform</div>
+      <div class="mobile-logo">
+        <img src="/logo.png" alt="Manning Capital" class="mobile-logo-image" />
+        <div class="logo-text">
+          <span class="logo-text-primary">Manning</span>
+          <span class="logo-text-secondary">Capital</span>
+        </div>
+      </div>
     </header>
 
     <router-outlet />

@@ -1,0 +1,40 @@
+# Dependencies
+node_modules
+npm-debug.log
+package-lock.json
+
+# Build outputs
+dist
+.angular
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Tests
+coverage
+*.spec.ts
+e2e
+
+# Environment
+.env
+.env.local
+
+# macOS
+.DS_Store
+
+# Logs
+logs
+*.log
+
