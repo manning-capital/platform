@@ -1,0 +1,76 @@
+<div class="app-container">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar" [class.mobile-open]="mobileMenuOpen">
+    <div class="sidebar-header">
+      <div class="logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+        </svg>
+        <span>QuantPlatform</span>
+      </div>
+      <button class="mobile-close" (click)="toggleMobileMenu()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="nav-menu">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" (click)="toggleMobileMenu()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+        </svg>
+        <span>Dashboard</span>
+      </a>
+
+      <a routerLink="/models" routerLinkActive="active" class="nav-item" (click)="toggleMobileMenu()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+        </svg>
+        <span>Model Performance</span>
+      </a>
+
+      <a routerLink="/live-trades" routerLinkActive="active" class="nav-item" (click)="toggleMobileMenu()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+        </svg>
+        <span>Live Trades</span>
+        <span class="live-indicator"></span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+          </svg>
+        </div>
+        <div class="user-details">
+          <div class="user-name">Trader</div>
+          <div class="user-status">Active</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+      <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+        </svg>
+      </button>
+      <div class="mobile-logo">QuantPlatform</div>
+    </header>
+
+    <router-outlet />
+  </main>
+</div>
+
+<!-- Mobile Menu Overlay -->
+@if (mobileMenuOpen) {
+  <div class="mobile-overlay" (click)="toggleMobileMenu()"></div>
+}

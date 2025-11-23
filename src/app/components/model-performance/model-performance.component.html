@@ -1,0 +1,189 @@
+<div class="model-performance">
+  <header class="page-header">
+    <h1>Model Performance Analysis</h1>
+    <p class="subtitle">Deep dive into quantitative model metrics and trade history</p>
+  </header>
+
+  <div class="performance-content">
+    <!-- Model Selector -->
+    <aside class="model-sidebar">
+      <h3>Models</h3>
+      <div class="model-list">
+        @for (model of models(); track model.id) {
+          <div 
+            class="model-item" 
+            [class.active]="model.id === selectedModelId()"
+            [class.model-active]="model.status === 'ACTIVE'"
+            (click)="selectModel(model.id)">
+            <div class="model-item-header">
+              <span class="model-name">{{ model.name }}</span>
+              <span class="status-dot" [class.active]="model.status === 'ACTIVE'"></span>
+            </div>
+            <div class="model-item-stats">
+              <span class="pnl" [class.positive]="model.totalPnL >= 0">
+                {{ formatCurrency(model.totalPnL) }}
+              </span>
+              <span class="win-rate">{{ model.winRate }}% WR</span>
+            </div>
+          </div>
+        }
+      </div>
+    </aside>
+
+    <!-- Model Details -->
+    @if (selectedModel(); as model) {
+      <div class="model-details">
+        <!-- Model Info Header -->
+        <div class="model-info-card">
+          <div class="model-title-section">
+            <div>
+              <h2>{{ model.name }}</h2>
+              <p class="strategy-type">{{ model.strategy }}</p>
+            </div>
+            <div class="model-status" [class.active]="model.status === 'ACTIVE'">
+              <span class="status-indicator"></span>
+              {{ model.status }}
+            </div>
+          </div>
+
+          <!-- Key Metrics Grid -->
+          <div class="key-metrics-grid">
+            <div class="key-metric">
+              <div class="metric-icon profit">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+                </svg>
+              </div>
+              <div class="metric-info">
+                <span class="metric-label">Total Profit</span>
+                <span class="metric-value positive">{{ formatCurrency(model.totalPnL) }}</span>
+              </div>
+            </div>
+
+            <div class="key-metric">
+              <div class="metric-icon accuracy">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              </div>
+              <div class="metric-info">
+                <span class="metric-label">Win Rate</span>
+                <span class="metric-value">{{ model.winRate }}%</span>
+              </div>
+            </div>
+
+            <div class="key-metric">
+              <div class="metric-icon risk">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+                  <path d="M16 18l-2.29-2.29 4.88-4.88 4 4L22 7.41 20.59 6l-6 6-4-4-6.3 6.29L2 12v6z" opacity="0.5"/>
+                </svg>
+              </div>
+              <div class="metric-info">
+                <span class="metric-label">Sharpe Ratio</span>
+                <span class="metric-value">{{ model.sharpeRatio }}</span>
+              </div>
+            </div>
+
+            <div class="key-metric">
+              <div class="metric-icon drawdown">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16 18l2.29-2.29-4.88-4.88-4 4L2 7.41 3.41 6l6 6 4-4 6.3 6.29L22 12v6z"/>
+                </svg>
+              </div>
+              <div class="metric-info">
+                <span class="metric-label">Max Drawdown</span>
+                <span class="metric-value negative">{{ model.maxDrawdown }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Advanced Metrics -->
+        <div class="advanced-metrics">
+          <h3>Advanced Metrics</h3>
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span class="metric-label">Total Trades</span>
+              <span class="metric-value">{{ model.totalTrades }}</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Average Win</span>
+              <span class="metric-value positive">{{ formatCurrency(model.avgWin) }}</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Average Loss</span>
+              <span class="metric-value negative">{{ formatCurrency(model.avgLoss) }}</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Win/Loss Ratio</span>
+              <span class="metric-value">{{ getWinLossRatio(model) }}</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Expectancy</span>
+              <span class="metric-value positive">{{ formatCurrency(getExpectancy(model)) }}</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Profit Factor</span>
+              <span class="metric-value">{{ getProfitFactor(model).toFixed(2) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trade History -->
+        <div class="trade-history">
+          <h3>Trade History</h3>
+          <div class="trades-table-container">
+            <table class="trades-table">
+              <thead>
+                <tr>
+                  <th>Symbol</th>
+                  <th>Side</th>
+                  <th>Quantity</th>
+                  <th>Entry Price</th>
+                  <th>Current Price</th>
+                  <th>P&L</th>
+                  <th>P&L %</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (trade of modelTrades(); track trade.id) {
+                  <tr>
+                    <td class="symbol">{{ trade.symbol }}</td>
+                    <td>
+                      <span class="side-badge" [class.buy]="trade.side === 'BUY'" 
+                            [class.sell]="trade.side === 'SELL'">
+                        {{ trade.side }}
+                      </span>
+                    </td>
+                    <td>{{ trade.quantity }}</td>
+                    <td>{{ formatCurrency(trade.entryPrice) }}</td>
+                    <td>{{ formatCurrency(trade.currentPrice) }}</td>
+                    <td [class.positive]="trade.pnl >= 0" [class.negative]="trade.pnl < 0">
+                      {{ formatCurrency(trade.pnl) }}
+                    </td>
+                    <td [class.positive]="trade.pnlPercent >= 0" [class.negative]="trade.pnlPercent < 0">
+                      {{ formatPercent(trade.pnlPercent) }}
+                    </td>
+                    <td>
+                      <span class="status-badge" [class.open]="trade.status === 'OPEN'" 
+                            [class.closed]="trade.status === 'CLOSED'">
+                        {{ trade.status }}
+                      </span>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="8" class="no-trades">No trades for this model</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
