@@ -168,10 +168,6 @@
   border-color: var(--accent-color);
 }
 
-.model-card.active {
-  /* Keep border even when active */
-}
-
 .model-header {
   display: flex;
   justify-content: space-between;
