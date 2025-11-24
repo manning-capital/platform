@@ -1,8 +1,9 @@
-import { Component, Input, OnChanges, SimpleChanges, ViewChild, signal, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ViewChild, signal, OnInit, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData, Chart, registerables } from 'chart.js';
 import { TradeChartData } from '../../models/trade.model';
+import { ThemeService } from '../../services/theme.service';
 
 // Register Chart.js components
 Chart.register(...registerables);
@@ -14,6 +15,7 @@ Chart.register(...registerables);
   styleUrl: './trade-chart.component.css'
 })
 export class TradeChartComponent implements OnChanges, OnInit {
+  private themeService = inject(ThemeService);
   @Input() set chartData(data: TradeChartData | null) {
     this.chartDataSignal.set(data);
     if (data) {
@@ -130,7 +132,29 @@ export class TradeChartComponent implements OnChanges, OnInit {
   }
 
   ngOnInit(): void {
-    // Component initialization
+    // Watch for theme changes and update chart colors
+    effect(() => {
+      const theme = this.themeService.theme();
+      const data = this.chartDataSignal();
+      if (data) {
+        this.updateChart(data);
+      }
+    });
+  }
+
+  private getChartColor(): string {
+    // Use theme-appropriate colors
+    const theme = this.themeService.theme();
+    
+    // For dark mode, use a brighter/lighter color that stands out better
+    // For light mode, use the standard seagrass color
+    if (theme === 'dark') {
+      // Use a brighter teal/cyan that works well on dark backgrounds
+      return '#5dd5c4'; // Lighter teal/cyan
+    } else {
+      // Use seagrass for light mode
+      return '#43aa8b'; // seagrass
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -153,15 +177,15 @@ export class TradeChartComponent implements OnChanges, OnInit {
       {
         label: data.metricName,
         data: dataPoints,
-        borderColor: 'var(--chart-primary, #43aa8b)',
+        borderColor: this.getChartColor(),
         backgroundColor: 'transparent',
         borderWidth: 3,
         pointRadius: 0,
         pointHoverRadius: 6,
         pointHoverBorderWidth: 2,
-        pointHoverBackgroundColor: 'var(--chart-primary, #43aa8b)',
+        pointHoverBackgroundColor: this.getChartColor(),
         pointHoverBorderColor: '#fff',
-        tension: 0.4,
+        tension: 0,
         fill: false,
         order: 1
       }
