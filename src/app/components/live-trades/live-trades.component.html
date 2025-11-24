@@ -127,8 +127,8 @@
               @for (tag of getTradeTags(trade); track tag) {
                 @if (tag === 'COMPOUND') {
                   <span class="side-badge small compound">COMPOUND</span>
-                } @else if (tag === 'BUY' || tag === 'SELL') {
-                  <span class="side-badge small" [class.buy]="tag === 'BUY'" [class.sell]="tag === 'SELL'">
+                } @else if (tag === 'LONG' || tag === 'SHORT') {
+                  <span class="side-badge small" [class.long]="tag === 'LONG'" [class.short]="tag === 'SHORT'">
                     {{ tag }}
                   </span>
                 } @else if (tag === 'PAPER') {
@@ -217,8 +217,8 @@
               @for (tag of getTradeTags(trade); track tag) {
                 @if (tag === 'COMPOUND') {
                   <span class="side-badge large compound">COMPOUND</span>
-                } @else if (tag === 'BUY' || tag === 'SELL') {
-                  <span class="side-badge large" [class.buy]="tag === 'BUY'" [class.sell]="tag === 'SELL'">
+                } @else if (tag === 'LONG' || tag === 'SHORT') {
+                  <span class="side-badge large" [class.long]="tag === 'LONG'" [class.short]="tag === 'SHORT'">
                     {{ tag }}
                   </span>
                 } @else if (tag === 'PAPER') {
@@ -251,7 +251,7 @@
                   <thead>
                     <tr>
                       <th>Pair</th>
-                      <th>Side</th>
+                      <th>Trade Type</th>
                       <th>Quantity</th>
                       <th>Entry Price</th>
                       <th>Current Price</th>
@@ -268,9 +268,9 @@
                           <span class="position-to">{{ position.toAsset }}</span>
                         </td>
                         <td>
-                          <span class="side-badge small" [class.buy]="position.side === 'BUY'" 
-                                [class.sell]="position.side === 'SELL'">
-                            {{ position.side }}
+                          <span class="side-badge small" [class.long]="position.tradeType === 'LONG'" 
+                                [class.short]="position.tradeType === 'SHORT'">
+                            {{ position.tradeType }}
                           </span>
                         </td>
                         <td>{{ position.quantity }}</td>
@@ -298,9 +298,9 @@
                         <span class="position-arrow">→</span>
                         <span class="position-to">{{ position.toAsset }}</span>
                       </div>
-                      <span class="side-badge small" [class.buy]="position.side === 'BUY'" 
-                            [class.sell]="position.side === 'SELL'">
-                        {{ position.side }}
+                      <span class="side-badge small" [class.long]="position.tradeType === 'LONG'" 
+                            [class.short]="position.tradeType === 'SHORT'">
+                        {{ position.tradeType }}
                       </span>
                     </div>
                     <div class="position-card-body">
@@ -416,37 +416,6 @@
             </div>
           </section>
 
-          <!-- Price Information -->
-          @if (trade.trades.length === 1) {
-            <section class="detail-section">
-              <h3 class="section-title">Price Information</h3>
-              @if (getPrimaryPosition(trade); as pos) {
-                <div class="detail-grid">
-                  <div class="detail-item">
-                    <span class="detail-label">Entry Price</span>
-                    <span class="detail-value highlight">{{ formatCurrency(pos.entryPrice) }}</span>
-                  </div>
-                  <div class="detail-item">
-                    <span class="detail-label">Current Price</span>
-                    <span class="detail-value highlight current-price">{{ formatCurrency(pos.currentPrice) }}</span>
-                  </div>
-                  @if (pos.exitPrice) {
-                    <div class="detail-item">
-                      <span class="detail-label">Exit Price</span>
-                      <span class="detail-value highlight">{{ formatCurrency(pos.exitPrice) }}</span>
-                    </div>
-                  }
-                  <div class="detail-item">
-                    <span class="detail-label">Price Change</span>
-                    <span class="detail-value" [class.positive]="pos.currentPrice >= pos.entryPrice" 
-                          [class.negative]="pos.currentPrice < pos.entryPrice">
-                      {{ formatCurrency(pos.currentPrice - pos.entryPrice) }}
-                    </span>
-                  </div>
-                </div>
-              }
-            </section>
-          }
         </div>
       </div>
     } @else {

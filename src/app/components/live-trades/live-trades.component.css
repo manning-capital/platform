@@ -324,13 +324,13 @@
   font-size: 0.875rem;
 }
 
-.side-badge.buy {
+.side-badge.long {
   background: var(--positive-bg);
   color: var(--positive-color);
   border: 1px solid var(--positive-border);
 }
 
-.side-badge.sell {
+.side-badge.short {
   background: var(--negative-bg);
   color: var(--negative-color);
   border: 1px solid var(--negative-border);

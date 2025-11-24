@@ -104,7 +104,7 @@ export class ModelPerformanceComponent implements OnInit, OnDestroy {
     return winAmount / lossAmount;
   }
 
-  protected getTradeSide(trade: ModelTrade): 'BUY' | 'SELL' | 'COMPOUND' {
+  protected getTradeSide(trade: ModelTrade): 'LONG' | 'SHORT' | 'COMPOUND' {
     return this.tradingService.getTradeSide(trade);
   }
 

@@ -176,7 +176,7 @@
               <thead>
                 <tr>
                   <th>Symbol</th>
-                  <th>Side</th>
+                  <th>Trade Type</th>
                   <th>Quantity</th>
                   <th>Entry Price</th>
                   <th>Current Price</th>
@@ -195,8 +195,8 @@
                       @for (tag of getTradeTags(trade); track tag) {
                         @if (tag === 'COMPOUND') {
                           <span class="side-badge compound">COMPOUND</span>
-                        } @else if (tag === 'BUY' || tag === 'SELL') {
-                          <span class="side-badge" [class.buy]="tag === 'BUY'" [class.sell]="tag === 'SELL'">
+                        } @else if (tag === 'LONG' || tag === 'SHORT') {
+                          <span class="side-badge" [class.long]="tag === 'LONG'" [class.short]="tag === 'SHORT'">
                             {{ tag }}
                           </span>
                         } @else if (tag === 'PAPER') {
@@ -247,8 +247,8 @@
                     @for (tag of getTradeTags(trade); track tag) {
                       @if (tag === 'COMPOUND') {
                         <span class="side-badge compound">COMPOUND</span>
-                      } @else if (tag === 'BUY' || tag === 'SELL') {
-                        <span class="side-badge" [class.buy]="tag === 'BUY'" [class.sell]="tag === 'SELL'">
+                      } @else if (tag === 'LONG' || tag === 'SHORT') {
+                        <span class="side-badge" [class.long]="tag === 'LONG'" [class.short]="tag === 'SHORT'">
                           {{ tag }}
                         </span>
                       } @else if (tag === 'PAPER') {

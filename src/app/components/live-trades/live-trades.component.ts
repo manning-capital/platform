@@ -32,7 +32,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
   protected searchTerm = signal<string>('');
   
   // Available tags
-  protected availableTags = ['BUY', 'SELL', 'COMPOUND', 'PAPER'];
+  protected availableTags = ['LONG', 'SHORT', 'COMPOUND', 'PAPER'];
   
   // Date filter state - default to past week
   private getDefaultStartDate(): Date {
@@ -57,7 +57,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
     this.allTrades().filter(t => t.status === 'CLOSED')
   );
   
-  protected getTradeSide(trade: ModelTrade): 'BUY' | 'SELL' | 'COMPOUND' {
+  protected getTradeSide(trade: ModelTrade): 'LONG' | 'SHORT' | 'COMPOUND' {
     return this.tradingService.getTradeSide(trade);
   }
 
@@ -592,7 +592,6 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
 
   private parseQueryParams(params: Params): {
     status: 'ALL' | 'OPEN' | 'CLOSED';
-    side: 'ALL' | 'BUY' | 'SELL' | 'COMPOUND';
     model: string;
     search: string;
     startDate: Date;
@@ -602,7 +601,6 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
   } {
     return {
       status: (params['status'] as 'ALL' | 'OPEN' | 'CLOSED') || 'ALL',
-      side: (params['side'] as 'ALL' | 'BUY' | 'SELL' | 'COMPOUND') || 'ALL',
       model: params['model'] || 'ALL',
       search: params['search'] || '',
       startDate: params['startDate'] ? new Date(params['startDate']) : this.getDefaultStartDate(),

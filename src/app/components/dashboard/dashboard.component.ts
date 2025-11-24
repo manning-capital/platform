@@ -22,7 +22,7 @@ export class DashboardComponent {
     );
   });
 
-  protected getTradeSide(trade: ModelTrade): 'BUY' | 'SELL' | 'COMPOUND' {
+  protected getTradeSide(trade: ModelTrade): 'LONG' | 'SHORT' | 'COMPOUND' {
     return this.tradingService.getTradeSide(trade);
   }
 

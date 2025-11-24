@@ -16,47 +16,6 @@ export class TradingService {
     this.startLiveUpdates();
   }
 
-  // Helper method to normalize old-format model trades to new format
-  private normalizeModelTrade(modelTrade: any): ModelTrade {
-    // If already in new format, ensure all trades have timestamps
-    if (modelTrade.trades && Array.isArray(modelTrade.trades)) {
-      return modelTrade as ModelTrade;
-    }
-
-    // Convert old format to new format (legacy support)
-    if (modelTrade.positions && Array.isArray(modelTrade.positions)) {
-      return {
-        ...modelTrade,
-        trades: modelTrade.positions.map((pos: any) => ({
-          ...pos
-        }))
-      };
-    }
-
-    // Convert very old format (single position) to new format
-    const trade: Trade = {
-      id: `${modelTrade.id}-t1`,
-      fromAsset: 'USD',
-      toAsset: modelTrade.symbol,
-      side: modelTrade.side,
-      quantity: modelTrade.quantity,
-      entryPrice: modelTrade.entryPrice,
-      currentPrice: modelTrade.currentPrice,
-      exitPrice: modelTrade.exitPrice,
-      pnl: modelTrade.pnl,
-      pnlPercent: modelTrade.pnlPercent
-    };
-
-    return {
-      id: modelTrade.id,
-      modelId: modelTrade.modelId,
-      trades: [trade],
-      status: modelTrade.status,
-      timestamp: modelTrade.timestamp,
-      pnl: modelTrade.pnl,
-      pnlPercent: modelTrade.pnlPercent
-    };
-  }
 
   getPrimaryTrade(modelTrade: ModelTrade): Trade {
     if (!modelTrade.trades || modelTrade.trades.length === 0) {
@@ -65,16 +24,16 @@ export class TradingService {
     return modelTrade.trades[0];
   }
 
-  getTradeSide(modelTrade: ModelTrade): 'BUY' | 'SELL' | 'COMPOUND' {
+  getTradeSide(modelTrade: ModelTrade): 'LONG' | 'SHORT' | 'COMPOUND' {
     if (!modelTrade.trades || modelTrade.trades.length === 0) {
       return 'COMPOUND';
     }
     
-    const firstSide = modelTrade.trades[0].side;
-    const allSameSide = modelTrade.trades.every(t => t.side === firstSide);
+    const firstTradeType = modelTrade.trades[0].tradeType;
+    const allSameTradeType = modelTrade.trades.every(t => t.tradeType === firstTradeType);
     
-    if (allSameSide) {
-      return firstSide;
+    if (allSameTradeType) {
+      return firstTradeType;
     }
     return 'COMPOUND';
   }
@@ -82,9 +41,9 @@ export class TradingService {
   getTradeTags(modelTrade: ModelTrade, model?: Model): string[] {
     const tags: string[] = [];
     
-    // Add side tag (BUY, SELL, or COMPOUND)
-    const side = this.getTradeSide(modelTrade);
-    tags.push(side);
+    // Add trade type tag (LONG, SHORT, or COMPOUND)
+    const tradeType = this.getTradeSide(modelTrade);
+    tags.push(tradeType);
     
     // Add paper tag if model is paper trading
     if (model?.paperTrading) {
@@ -185,11 +144,11 @@ export class TradingService {
       {
         id: 't1',
         modelId: '1',
-        positions: [{
+        trades: [{
           id: 't1-p1',
           fromAsset: 'USD',
           toAsset: 'AAPL',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 100,
           entryPrice: 178.50,
           currentPrice: 179.85,
@@ -204,11 +163,11 @@ export class TradingService {
       {
         id: 't2',
         modelId: '2',
-        positions: [{
+        trades: [{
           id: 't2-p1',
           fromAsset: 'USD',
           toAsset: 'TSLA',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 50,
           entryPrice: 242.30,
           currentPrice: 245.75,
@@ -223,11 +182,11 @@ export class TradingService {
       {
         id: 't3',
         modelId: '1',
-        positions: [{
+        trades: [{
           id: 't3-p1',
           fromAsset: 'USD',
           toAsset: 'MSFT',
-          side: 'SELL',
+          tradeType: 'SHORT',
           quantity: 75,
           entryPrice: 410.20,
           currentPrice: 408.90,
@@ -243,11 +202,11 @@ export class TradingService {
       {
         id: 't4',
         modelId: '4',
-        positions: [{
+        trades: [{
           id: 't4-p1',
           fromAsset: 'USD',
           toAsset: 'NVDA',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 30,
           entryPrice: 495.80,
           currentPrice: 492.15,
@@ -262,11 +221,11 @@ export class TradingService {
       {
         id: 't5',
         modelId: '2',
-        positions: [{
+        trades: [{
           id: 't5-p1',
           fromAsset: 'USD',
           toAsset: 'META',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 60,
           entryPrice: 485.40,
           currentPrice: 487.90,
@@ -281,11 +240,11 @@ export class TradingService {
       {
         id: 't6',
         modelId: '4',
-        positions: [{
+        trades: [{
           id: 't6-p1',
           fromAsset: 'USD',
           toAsset: 'GOOGL',
-          side: 'SELL',
+          tradeType: 'SHORT',
           quantity: 80,
           entryPrice: 139.75,
           currentPrice: 140.20,
@@ -300,11 +259,11 @@ export class TradingService {
       {
         id: 't7',
         modelId: '1',
-        positions: [{
+        trades: [{
           id: 't7-p1',
           fromAsset: 'USD',
           toAsset: 'AMZN',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 45,
           entryPrice: 178.25,
           currentPrice: 180.50,
@@ -319,11 +278,11 @@ export class TradingService {
       {
         id: 't8',
         modelId: '2',
-        positions: [{
+        trades: [{
           id: 't8-p1',
           fromAsset: 'USD',
           toAsset: 'AMD',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 120,
           entryPrice: 158.90,
           currentPrice: 157.20,
@@ -339,11 +298,11 @@ export class TradingService {
       {
         id: 't9',
         modelId: '4',
-        positions: [{
+        trades: [{
           id: 't9-p1',
           fromAsset: 'USD',
           toAsset: 'NFLX',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 25,
           entryPrice: 612.40,
           currentPrice: 615.80,
@@ -358,11 +317,11 @@ export class TradingService {
       {
         id: 't10',
         modelId: '1',
-        positions: [{
+        trades: [{
           id: 't10-p1',
           fromAsset: 'USD',
           toAsset: 'INTC',
-          side: 'SELL',
+          tradeType: 'SHORT',
           quantity: 200,
           entryPrice: 42.15,
           currentPrice: 41.80,
@@ -377,11 +336,11 @@ export class TradingService {
       {
         id: 't11',
         modelId: '2',
-        positions: [{
+        trades: [{
           id: 't11-p1',
           fromAsset: 'USD',
           toAsset: 'BABA',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 85,
           entryPrice: 88.50,
           currentPrice: 90.25,
@@ -396,11 +355,11 @@ export class TradingService {
       {
         id: 't12',
         modelId: '4',
-        positions: [{
+        trades: [{
           id: 't12-p1',
           fromAsset: 'USD',
           toAsset: 'DIS',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 110,
           entryPrice: 95.30,
           currentPrice: 94.85,
@@ -416,11 +375,11 @@ export class TradingService {
       {
         id: 't13',
         modelId: '1',
-        positions: [{
+        trades: [{
           id: 't13-p1',
           fromAsset: 'USD',
           toAsset: 'PYPL',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 90,
           entryPrice: 62.80,
           currentPrice: 64.20,
@@ -435,11 +394,11 @@ export class TradingService {
       {
         id: 't14',
         modelId: '2',
-        positions: [{
+        trades: [{
           id: 't14-p1',
           fromAsset: 'USD',
           toAsset: 'SHOP',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 55,
           entryPrice: 78.90,
           currentPrice: 77.50,
@@ -454,11 +413,11 @@ export class TradingService {
       {
         id: 't15',
         modelId: '4',
-        positions: [{
+        trades: [{
           id: 't15-p1',
           fromAsset: 'USD',
           toAsset: 'SQ',
-          side: 'SELL',
+          tradeType: 'SHORT',
           quantity: 140,
           entryPrice: 74.20,
           currentPrice: 73.85,
@@ -473,11 +432,11 @@ export class TradingService {
       {
         id: 't16',
         modelId: '1',
-        positions: [{
+        trades: [{
           id: 't16-p1',
           fromAsset: 'USD',
           toAsset: 'UBER',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 170,
           entryPrice: 72.50,
           currentPrice: 73.95,
@@ -492,11 +451,11 @@ export class TradingService {
       {
         id: 't17',
         modelId: '2',
-        positions: [{
+        trades: [{
           id: 't17-p1',
           fromAsset: 'USD',
           toAsset: 'COIN',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 40,
           entryPrice: 245.80,
           currentPrice: 248.30,
@@ -512,11 +471,11 @@ export class TradingService {
       {
         id: 't18',
         modelId: '4',
-        positions: [{
+        trades: [{
           id: 't18-p1',
           fromAsset: 'USD',
           toAsset: 'SNOW',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 65,
           entryPrice: 178.40,
           currentPrice: 175.90,
@@ -531,11 +490,11 @@ export class TradingService {
       {
         id: 't19',
         modelId: '1',
-        positions: [{
+        trades: [{
           id: 't19-p1',
           fromAsset: 'USD',
           toAsset: 'PLTR',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 250,
           entryPrice: 25.60,
           currentPrice: 26.15,
@@ -550,11 +509,11 @@ export class TradingService {
       {
         id: 't20',
         modelId: '2',
-        positions: [{
+        trades: [{
           id: 't20-p1',
           fromAsset: 'USD',
           toAsset: 'ROKU',
-          side: 'SELL',
+          tradeType: 'SHORT',
           quantity: 95,
           entryPrice: 68.90,
           currentPrice: 69.40,
@@ -569,11 +528,11 @@ export class TradingService {
       {
         id: 't21',
         modelId: '4',
-        positions: [{
+        trades: [{
           id: 't21-p1',
           fromAsset: 'USD',
           toAsset: 'ZM',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 75,
           entryPrice: 68.25,
           currentPrice: 69.80,
@@ -589,11 +548,11 @@ export class TradingService {
       {
         id: 't22',
         modelId: '1',
-        positions: [{
+        trades: [{
           id: 't22-p1',
           fromAsset: 'USD',
           toAsset: 'SNAP',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 310,
           entryPrice: 11.85,
           currentPrice: 12.20,
@@ -608,11 +567,11 @@ export class TradingService {
       {
         id: 't23',
         modelId: '2',
-        positions: [{
+        trades: [{
           id: 't23-p1',
           fromAsset: 'USD',
           toAsset: 'SPOT',
-          side: 'BUY',
+          tradeType: 'LONG',
           quantity: 35,
           entryPrice: 312.40,
           currentPrice: 315.80,
@@ -628,12 +587,12 @@ export class TradingService {
       {
         id: 't-compound-1',
         modelId: '1',
-        positions: [
+        trades: [
           {
             id: 'p1',
             fromAsset: 'USD',
             toAsset: 'BTC',
-            side: 'BUY',
+            tradeType: 'LONG',
             quantity: 0.5,
             entryPrice: 45000,
             currentPrice: 45500,
@@ -644,7 +603,7 @@ export class TradingService {
             id: 'p2',
             fromAsset: 'USD',
             toAsset: 'ETH',
-            side: 'SELL',
+            tradeType: 'SHORT',
             quantity: 10,
             entryPrice: 2800,
             currentPrice: 2750,
@@ -660,12 +619,12 @@ export class TradingService {
       {
         id: 't-compound-2',
         modelId: '2',
-        positions: [
+        trades: [
           {
             id: 'p3',
             fromAsset: 'USD',
             toAsset: 'AAPL',
-            side: 'BUY',
+            tradeType: 'LONG',
             quantity: 50,
             entryPrice: 178.50,
             currentPrice: 180.20,
@@ -676,7 +635,7 @@ export class TradingService {
             id: 'p4',
             fromAsset: 'USD',
             toAsset: 'MSFT',
-            side: 'SELL',
+            tradeType: 'SHORT',
             quantity: 30,
             entryPrice: 410.00,
             currentPrice: 408.50,
@@ -692,12 +651,12 @@ export class TradingService {
       {
         id: 't-compound-3',
         modelId: '1',
-        positions: [
+        trades: [
           {
             id: 'p5',
             fromAsset: 'USD',
             toAsset: 'TSLA',
-            side: 'BUY',
+            tradeType: 'LONG',
             quantity: 20,
             entryPrice: 242.30,
             currentPrice: 240.50,
@@ -709,7 +668,7 @@ export class TradingService {
             id: 'p6',
             fromAsset: 'USD',
             toAsset: 'NVDA',
-            side: 'SELL',
+            tradeType: 'SHORT',
             quantity: 15,
             entryPrice: 495.80,
             currentPrice: 498.20,
@@ -726,12 +685,12 @@ export class TradingService {
       {
         id: 't-compound-4',
         modelId: '3',
-        positions: [
+        trades: [
           {
             id: 'p7',
             fromAsset: 'USD',
             toAsset: 'GOOGL',
-            side: 'BUY',
+            tradeType: 'LONG',
             quantity: 100,
             entryPrice: 140.25,
             currentPrice: 142.80,
@@ -742,7 +701,7 @@ export class TradingService {
             id: 'p8',
             fromAsset: 'USD',
             toAsset: 'AMZN',
-            side: 'BUY',
+            tradeType: 'LONG',
             quantity: 60,
             entryPrice: 175.50,
             currentPrice: 178.20,
@@ -753,7 +712,7 @@ export class TradingService {
             id: 'p9',
             fromAsset: 'USD',
             toAsset: 'META',
-            side: 'SELL',
+            tradeType: 'SHORT',
             quantity: 40,
             entryPrice: 485.00,
             currentPrice: 482.50,
@@ -769,12 +728,12 @@ export class TradingService {
       {
         id: 't-compound-5',
         modelId: '4',
-        positions: [
+        trades: [
           {
             id: 'p10',
             fromAsset: 'USD',
             toAsset: 'NFLX',
-            side: 'SELL',
+            tradeType: 'SHORT',
             quantity: 35,
             entryPrice: 610.00,
             currentPrice: 612.50,
@@ -785,7 +744,7 @@ export class TradingService {
             id: 'p11',
             fromAsset: 'USD',
             toAsset: 'DIS',
-            side: 'BUY',
+            tradeType: 'LONG',
             quantity: 150,
             entryPrice: 94.20,
             currentPrice: 95.80,
@@ -801,12 +760,12 @@ export class TradingService {
       {
         id: 't-compound-6',
         modelId: '1',
-        positions: [
+        trades: [
           {
             id: 'p12',
             fromAsset: 'USD',
             toAsset: 'PYPL',
-            side: 'BUY',
+            tradeType: 'LONG',
             quantity: 120,
             entryPrice: 63.50,
             currentPrice: 65.20,
@@ -818,7 +777,7 @@ export class TradingService {
             id: 'p13',
             fromAsset: 'USD',
             toAsset: 'SQ',
-            side: 'SELL',
+            tradeType: 'SHORT',
             quantity: 200,
             entryPrice: 74.80,
             currentPrice: 73.40,
@@ -830,7 +789,7 @@ export class TradingService {
             id: 'p14',
             fromAsset: 'USD',
             toAsset: 'SHOP',
-            side: 'BUY',
+            tradeType: 'LONG',
             quantity: 80,
             entryPrice: 79.20,
             currentPrice: 81.50,
@@ -847,12 +806,12 @@ export class TradingService {
       {
         id: 't-compound-7',
         modelId: '2',
-        positions: [
+        trades: [
           {
             id: 'p15',
             fromAsset: 'USD',
             toAsset: 'AMD',
-            side: 'BUY',
+            tradeType: 'LONG',
             quantity: 200,
             entryPrice: 159.50,
             currentPrice: 161.80,
@@ -863,7 +822,7 @@ export class TradingService {
             id: 'p16',
             fromAsset: 'USD',
             toAsset: 'INTC',
-            side: 'SELL',
+            tradeType: 'SHORT',
             quantity: 300,
             entryPrice: 42.30,
             currentPrice: 41.90,
@@ -879,12 +838,12 @@ export class TradingService {
       {
         id: 't-compound-8',
         modelId: '3',
-        positions: [
+        trades: [
           {
             id: 'p17',
             fromAsset: 'USD',
             toAsset: 'BABA',
-            side: 'SELL',
+            tradeType: 'SHORT',
             quantity: 120,
             entryPrice: 89.50,
             currentPrice: 91.20,
@@ -896,7 +855,7 @@ export class TradingService {
             id: 'p18',
             fromAsset: 'USD',
             toAsset: 'SPOT',
-            side: 'BUY',
+            tradeType: 'LONG',
             quantity: 50,
             entryPrice: 310.00,
             currentPrice: 308.50,
@@ -913,12 +872,12 @@ export class TradingService {
       {
         id: 't-compound-9',
         modelId: '4',
-        positions: [
+        trades: [
           {
             id: 'p19',
             fromAsset: 'USD',
             toAsset: 'BTC',
-            side: 'BUY',
+            tradeType: 'LONG',
             quantity: 0.25,
             entryPrice: 45200,
             currentPrice: 45600,
@@ -929,7 +888,7 @@ export class TradingService {
             id: 'p20',
             fromAsset: 'USD',
             toAsset: 'ETH',
-            side: 'BUY',
+            tradeType: 'LONG',
             quantity: 5,
             entryPrice: 2820,
             currentPrice: 2850,
@@ -940,7 +899,7 @@ export class TradingService {
             id: 'p21',
             fromAsset: 'USD',
             toAsset: 'SOL',
-            side: 'SELL',
+            tradeType: 'SHORT',
             quantity: 50,
             entryPrice: 185.00,
             currentPrice: 183.50,
@@ -956,12 +915,12 @@ export class TradingService {
       {
         id: 't-compound-10',
         modelId: '1',
-        positions: [
+        trades: [
           {
             id: 'p22',
             fromAsset: 'USD',
             toAsset: 'TSLA',
-            side: 'BUY',
+            tradeType: 'LONG',
             quantity: 75,
             entryPrice: 241.00,
             currentPrice: 243.80,
@@ -972,7 +931,7 @@ export class TradingService {
             id: 'p23',
             fromAsset: 'USD',
             toAsset: 'NVDA',
-            side: 'BUY',
+            tradeType: 'LONG',
             quantity: 25,
             entryPrice: 496.00,
             currentPrice: 499.50,
@@ -983,7 +942,7 @@ export class TradingService {
             id: 'p24',
             fromAsset: 'USD',
             toAsset: 'MSFT',
-            side: 'SELL',
+            tradeType: 'SHORT',
             quantity: 50,
             entryPrice: 409.50,
             currentPrice: 407.80,
@@ -998,11 +957,8 @@ export class TradingService {
       }
     ];
 
-    // Normalize all trades to new format
-    const normalizedTrades = mockTrades.map(trade => this.normalizeModelTrade(trade));
-
     this.models.set(mockModels);
-    this.modelTrades.set(normalizedTrades);
+    this.modelTrades.set(mockTrades as ModelTrade[]);
   }
 
   private startLiveUpdates(): void {
@@ -1022,7 +978,7 @@ export class TradingService {
           const priceChange = (Math.random() - 0.5) * t.currentPrice * 0.01;
           const newPrice = Number((t.currentPrice + priceChange).toFixed(2));
           
-          const pnl = t.side === 'BUY' 
+          const pnl = t.tradeType === 'LONG' 
             ? (newPrice - t.entryPrice) * t.quantity
             : (t.entryPrice - newPrice) * t.quantity;
           const pnlPercent = ((pnl / (t.entryPrice * t.quantity)) * 100);
@@ -1214,7 +1170,7 @@ export class TradingService {
             value = basePrice + Math.sin(i / 5) * (basePrice * 0.02) + (Math.random() - 0.5) * (basePrice * 0.01);
             break;
           case 'Trend Following':
-            const trend = primaryTrade.side === 'BUY' ? 1 : -1;
+            const trend = primaryTrade.tradeType === 'LONG' ? 1 : -1;
             value = basePrice + (i / points) * (basePrice * 0.05) * trend + (Math.random() - 0.5) * (basePrice * 0.01);
             break;
           case 'Options Strategy':
@@ -1354,9 +1310,9 @@ export class TradingService {
           id: 'stop-loss',
           description: 'Stop loss not triggered',
           currentValue: currentPrice.toFixed(2),
-          targetValue: (basePrice * (primaryTrade.side === 'BUY' ? 0.97 : 1.03)).toFixed(2),
-          operator: primaryTrade.side === 'BUY' ? 'above' : 'below',
-          isMet: primaryTrade.side === 'BUY' ? currentPrice > basePrice * 0.97 : currentPrice < basePrice * 1.03,
+          targetValue: (basePrice * (primaryTrade.tradeType === 'LONG' ? 0.97 : 1.03)).toFixed(2),
+          operator: primaryTrade.tradeType === 'LONG' ? 'above' : 'below',
+          isMet: primaryTrade.tradeType === 'LONG' ? currentPrice > basePrice * 0.97 : currentPrice < basePrice * 1.03,
           type: 'stopLoss'
         });
         break;
@@ -1364,7 +1320,7 @@ export class TradingService {
         conditions.push({
           id: 'trend-reversal',
           description: 'Trend reversal detected',
-          currentValue: primaryTrade.side === 'BUY' ? 'Uptrend' : 'Downtrend',
+          currentValue: primaryTrade.tradeType === 'LONG' ? 'Uptrend' : 'Downtrend',
           targetValue: 'Reversal',
           operator: 'equals',
           isMet: false,
@@ -1383,9 +1339,9 @@ export class TradingService {
           id: 'profit-target',
           description: 'Profit target reached',
           currentValue: ((currentPrice / basePrice - 1) * 100).toFixed(2) + '%',
-          targetValue: (primaryTrade.side === 'BUY' ? '+8%' : '-8%'),
-          operator: primaryTrade.side === 'BUY' ? 'above' : 'below',
-          isMet: primaryTrade.side === 'BUY' ? currentPrice >= basePrice * 1.08 : currentPrice <= basePrice * 0.92,
+          targetValue: (primaryTrade.tradeType === 'LONG' ? '+8%' : '-8%'),
+          operator: primaryTrade.tradeType === 'LONG' ? 'above' : 'below',
+          isMet: primaryTrade.tradeType === 'LONG' ? currentPrice >= basePrice * 1.08 : currentPrice <= basePrice * 0.92,
           type: 'exit'
         });
         break;
@@ -1414,7 +1370,7 @@ export class TradingService {
           currentValue: ((currentPrice / basePrice - 1) * 100).toFixed(2) + '%',
           targetValue: '+3%',
           operator: 'above',
-          isMet: primaryTrade.side === 'BUY' ? currentPrice >= basePrice * 1.03 : currentPrice <= basePrice * 0.97,
+          isMet: primaryTrade.tradeType === 'LONG' ? currentPrice >= basePrice * 1.03 : currentPrice <= basePrice * 0.97,
           type: 'exit'
         });
         break;
@@ -1470,7 +1426,7 @@ export class TradingService {
     switch (strategy) {
       case 'Mean Reversion':
         // Stop loss further away, take profit closer
-        if (trade.side === 'BUY') {
+        if (trade.tradeType === 'LONG') {
           levels.push({
             label: 'Stop Loss',
             value: basePrice * 0.97,
@@ -1496,7 +1452,7 @@ export class TradingService {
         break;
       case 'Trend Following':
         // Wider stop loss, higher take profit
-        if (trade.side === 'BUY') {
+        if (trade.tradeType === 'LONG') {
           levels.push({
             label: 'Stop Loss',
             value: basePrice * 0.95,
@@ -1522,7 +1478,7 @@ export class TradingService {
         break;
       case 'Options Strategy':
         // Multiple exit levels
-        if (trade.side === 'BUY') {
+        if (trade.tradeType === 'LONG') {
           levels.push({
             label: 'Stop Loss',
             value: basePrice * 0.96,

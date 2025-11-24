@@ -2,7 +2,7 @@ export interface Trade {
   id: string;
   fromAsset: string;
   toAsset: string;
-  side: 'BUY' | 'SELL';
+  tradeType: 'LONG' | 'SHORT';
   quantity: number;
   entryPrice: number;
   currentPrice: number;

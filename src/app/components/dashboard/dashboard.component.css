@@ -333,12 +333,12 @@ tr:hover {
   font-weight: 600;
 }
 
-.side-badge.buy {
+.side-badge.long {
   background: var(--positive-bg);
   color: var(--positive-color);
 }
 
-.side-badge.sell {
+.side-badge.short {
   background: var(--negative-bg);
   color: var(--negative-color);
 }
