@@ -151,6 +151,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
   protected selectedTrade = computed(() => this.selectedTradeSignal());
 
   private isSyncingFromUrl = false;
+  private hasAutoSelectedInitialTrade = false;
 
   constructor() {
     // Watch filter signals and sync to URL (but not during initialization or when syncing from URL)
@@ -185,7 +186,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
     
     // Always sync from URL on init (even if empty, to set defaults)
     this.isSyncingFromUrl = true;
-    this.syncUrlToFilters(initialParams);
+    this.syncUrlToFilters(initialParams, true); // true = isInitialLoad
     this.isSyncingFromUrl = false;
     
     // Subscribe to query param changes (for browser back/forward and navigation)
@@ -196,7 +197,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
         const currentParams = this.route.snapshot.queryParams;
         if (JSON.stringify(currentParams) !== JSON.stringify(params)) {
           this.isSyncingFromUrl = true;
-          this.syncUrlToFilters(params);
+          this.syncUrlToFilters(params, false); // false = not initial load
           this.isSyncingFromUrl = false;
         }
       });
@@ -210,7 +211,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         const params = this.route.snapshot.queryParams;
         this.isSyncingFromUrl = true;
-        this.syncUrlToFilters(params);
+        this.syncUrlToFilters(params, false); // false = not initial load
         this.isSyncingFromUrl = false;
       });
     
@@ -344,6 +345,8 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
   // Pagination methods
   protected nextPage(): void {
     if (this.currentPage() < this.totalPages()) {
+      // Clear selected trade when changing pages to prevent auto-selection
+      this.selectedTradeSignal.set(null);
       this.currentPage.update(p => p + 1);
       // URL will be updated by effect
     }
@@ -351,6 +354,8 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
 
   protected previousPage(): void {
     if (this.currentPage() > 1) {
+      // Clear selected trade when changing pages to prevent auto-selection
+      this.selectedTradeSignal.set(null);
       this.currentPage.update(p => p - 1);
       // URL will be updated by effect
     }
@@ -358,6 +363,8 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
 
   protected goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages()) {
+      // Clear selected trade when changing pages to prevent auto-selection
+      this.selectedTradeSignal.set(null);
       this.currentPage.set(page);
       // URL will be updated by effect
     }
@@ -471,7 +478,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
     }
   }
 
-  private syncUrlToFilters(params: Params): void {
+  private syncUrlToFilters(params: Params, isInitialLoad: boolean = false): void {
     // Set filter signals from URL params (use defaults if not in URL)
     this.filterStatus.set((params['status'] as 'ALL' | 'OPEN' | 'CLOSED') || 'ALL');
     this.filterSide.set((params['side'] as 'ALL' | 'BUY' | 'SELL' | 'COMPOUND') || 'ALL');
@@ -519,14 +526,19 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
     }
     
     // Auto-select first trade in filtered list if none selected
-    setTimeout(() => {
-      if (!this.selectedTrade()) {
-        const filteredTrades = this.filteredTrades();
-        if (filteredTrades.length > 0) {
-          this.selectedTradeSignal.set(filteredTrades[0]);
+    // Only do this on the very first initial load, not when changing pages or syncing from URL
+    if (isInitialLoad && !this.hasAutoSelectedInitialTrade) {
+      setTimeout(() => {
+        if (!this.selectedTrade()) {
+          const paginatedTrades = this.paginatedTrades();
+          if (paginatedTrades.length > 0) {
+            // Only select if it's actually visible on the current page
+            this.selectedTradeSignal.set(paginatedTrades[0]);
+            this.hasAutoSelectedInitialTrade = true;
+          }
         }
-      }
-    }, 0);
+      }, 0);
+    }
   }
 
 
