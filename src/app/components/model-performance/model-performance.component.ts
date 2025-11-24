@@ -1,7 +1,8 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { TradingService } from '../../services/trading.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-model-performance',
@@ -9,12 +10,18 @@ import { TradingService } from '../../services/trading.service';
   templateUrl: './model-performance.component.html',
   styleUrl: './model-performance.component.css'
 })
-export class ModelPerformanceComponent {
+export class ModelPerformanceComponent implements OnInit, OnDestroy {
   private tradingService = inject(TradingService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private destroy$ = new Subject<void>();
   
   protected models = this.tradingService.models$;
-  protected viewMode = signal<'list' | 'detail'>('list');
   protected selectedModelId = signal<string>('');
+  
+  protected viewMode = computed(() => 
+    this.selectedModelId() ? 'detail' : 'list'
+  );
   
   protected selectedModel = computed(() => 
     this.tradingService.getModelById(this.selectedModelId())
@@ -41,13 +48,31 @@ export class ModelPerformanceComponent {
     Math.ceil(this.allModelTrades().length / this.pageSize())
   );
 
+  ngOnInit(): void {
+    // Read model ID from route params
+    this.route.params
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        const modelId = params['id'] || '';
+        this.selectedModelId.set(modelId);
+        // Reset pagination when model changes
+        if (modelId) {
+          this.currentPage.set(1);
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   protected selectModel(modelId: string): void {
-    this.selectedModelId.set(modelId);
-    this.viewMode.set('detail');
+    this.router.navigate(['/models', modelId]);
   }
 
   protected backToList(): void {
-    this.viewMode.set('list');
+    this.router.navigate(['/models']);
   }
 
   protected formatCurrency(value: number): string {
