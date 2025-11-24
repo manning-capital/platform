@@ -7,74 +7,163 @@
   box-sizing: border-box;
 }
 
-/* Color Palette Variables */
+/* Color Palette Variables - Used minimally for accents only */
 :root {
-  --color-1: #49694c;
-  --color-2: #a8c4a1;
-  --color-3: #e9d5a0;
-  --color-4: #f6a055;
-  --color-5: #c16149;
+  /* Base Colors */
+  --strawberry-red: #f94144;
+  --atomic-tangerine: #f3722c;
+  --carrot-orange: #f8961e;
+  --tuscan-sun: #f9c74f;
+  --willow-green: #90be6d;
+  --seagrass: #43aa8b;
+  --blue-slate: #577590;
+  --slate-grey: #66829a;
+  --air-force-blue: #748da3;
+  --cool-steel: #8197ab;
+  
+  /* Legacy color mappings for backward compatibility */
+  --color-1: var(--willow-green);
+  --color-2: var(--seagrass);
+  --color-3: var(--tuscan-sun);
+  --color-4: var(--atomic-tangerine);
+  --color-5: var(--strawberry-red);
+  
+  /* RGBA variants for common opacities */
+  /* Willow Green (Color 1 - Positive/Green) */
+  --color-1-rgba-05: rgba(144, 190, 109, 0.05);
+  --color-1-rgba-10: rgba(144, 190, 109, 0.1);
+  --color-1-rgba-15: rgba(144, 190, 109, 0.15);
+  --color-1-rgba-20: rgba(144, 190, 109, 0.2);
+  --color-1-rgba-30: rgba(144, 190, 109, 0.3);
+  --color-1-rgba-50: rgba(144, 190, 109, 0.5);
+  
+  /* Seagrass (Color 2 - Info/Light) */
+  --color-2-rgba-20: rgba(67, 170, 139, 0.2);
+  --color-2-rgba-50: rgba(67, 170, 139, 0.5);
+  
+  /* Atomic Tangerine (Color 4 - Warning) */
+  --color-4-rgba-10: rgba(243, 114, 44, 0.1);
+  --color-4-rgba-15: rgba(243, 114, 44, 0.15);
+  --color-4-rgba-20: rgba(243, 114, 44, 0.2);
+  --color-4-rgba-50: rgba(243, 114, 44, 0.5);
+  --atomic-tangerine-rgba-10: rgba(243, 114, 44, 0.1);
+  --atomic-tangerine-rgba-15: rgba(243, 114, 44, 0.15);
+  --atomic-tangerine-rgba-20: rgba(243, 114, 44, 0.2);
+  --atomic-tangerine-rgba-50: rgba(243, 114, 44, 0.5);
+  
+  /* Strawberry Red (Color 5 - Negative/Red) */
+  --color-5-rgba-05: rgba(249, 65, 68, 0.05);
+  --color-5-rgba-20: rgba(249, 65, 68, 0.2);
+  --color-5-rgba-50: rgba(249, 65, 68, 0.5);
+  
+  /* Additional color variants */
+  /* Carrot Orange */
+  --carrot-orange-rgba-20: rgba(248, 150, 30, 0.2);
+  --carrot-orange-rgba-50: rgba(248, 150, 30, 0.5);
+  
+  /* Tuscan Sun */
+  --tuscan-sun-rgba-20: rgba(249, 199, 79, 0.2);
+  --tuscan-sun-rgba-50: rgba(249, 199, 79, 0.5);
+  
+  /* Blue Slate */
+  --blue-slate-rgba-10: rgba(87, 117, 144, 0.1);
+  --blue-slate-rgba-15: rgba(87, 117, 144, 0.15);
+  --blue-slate-rgba-20: rgba(87, 117, 144, 0.2);
+  --blue-slate-rgba-50: rgba(87, 117, 144, 0.5);
+  
+  /* Slate Grey */
+  --slate-grey-rgba-10: rgba(102, 130, 154, 0.1);
+  --slate-grey-rgba-15: rgba(102, 130, 154, 0.15);
+  --slate-grey-rgba-20: rgba(102, 130, 154, 0.2);
+  --slate-grey-rgba-50: rgba(102, 130, 154, 0.5);
+  
+  /* Air Force Blue */
+  --air-force-blue-rgba-10: rgba(116, 141, 163, 0.1);
+  --air-force-blue-rgba-15: rgba(116, 141, 163, 0.15);
+  --air-force-blue-rgba-20: rgba(116, 141, 163, 0.2);
+  --air-force-blue-rgba-50: rgba(116, 141, 163, 0.5);
+  
+  /* Cool Steel */
+  --cool-steel-rgba-10: rgba(129, 151, 171, 0.1);
+  --cool-steel-rgba-15: rgba(129, 151, 171, 0.15);
+  --cool-steel-rgba-20: rgba(129, 151, 171, 0.2);
+  --cool-steel-rgba-50: rgba(129, 151, 171, 0.5);
+  
+  /* Semantic color combinations for common use cases */
+  --positive-bg: var(--color-1-rgba-20);
+  --positive-border: var(--color-1-rgba-50);
+  --positive-bg-light: var(--color-1-rgba-05);
+  
+  --negative-bg: var(--color-5-rgba-20);
+  --negative-border: var(--color-5-rgba-50);
+  --negative-bg-light: var(--color-5-rgba-05);
+  
+  --warning-bg: var(--color-4-rgba-20);
+  --warning-border: var(--color-4-rgba-50);
+  
+  --info-bg: var(--color-2-rgba-20);
+  --info-border: var(--color-2-rgba-50);
 }
 
 /* Dark Theme (Default) */
 :root[data-theme="dark"],
 :root {
-  /* Backgrounds */
-  --bg-primary: linear-gradient(135deg, #1a1f1a 0%, #12140f 100%);
-  --sidebar-bg: rgba(73, 105, 76, 0.1);
-  --card-bg: rgba(73, 105, 76, 0.12);
-  --hover-bg: rgba(73, 105, 76, 0.18);
-  --table-header-bg: rgba(73, 105, 76, 0.12);
+  /* Backgrounds - Black and dark colors */
+  --bg-primary: #000000;
+  --sidebar-bg: #0a0a0a;
+  --card-bg: #111111;
+  --hover-bg: #1a1a1a;
+  --table-header-bg: #0f0f0f;
   
-  /* Text Colors */
-  --text-primary: var(--color-3);
-  --text-secondary: var(--color-2);
+  /* Text Colors - Light colors for contrast */
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
   
   /* Borders */
-  --border-color: rgba(73, 105, 76, 0.25);
+  --border-color: rgba(255, 255, 255, 0.1);
   
-  /* Accents */
-  --accent-color: rgba(168, 196, 161, 0.5);
-  --accent-color-solid: var(--color-2);
-  --nav-active-bg: rgba(73, 105, 76, 0.25);
+  /* Accents - Use colorful palette minimally (avoid green to not conflict with positive numbers) */
+  --accent-color: var(--blue-slate-rgba-20);
+  --accent-color-solid: var(--blue-slate);
+  --nav-active-bg: var(--blue-slate-rgba-15);
   
-  /* Chart Colors */
-  --chart-primary: var(--color-4);
-  --chart-secondary: var(--color-5);
+  /* Chart Colors - Use colorful palette (avoid green) */
+  --chart-primary: var(--seagrass);
+  --chart-secondary: var(--carrot-orange);
   
-  /* Status Colors */
-  --positive-color: var(--color-2);
+  /* Status Colors - Use colorful palette */
+  --positive-color: var(--color-1);
   --negative-color: var(--color-5);
   --warning-color: var(--color-4);
-  --info-color: var(--color-3);
+  --info-color: var(--color-2);
 }
 
 /* Light Theme */
 :root[data-theme="light"] {
-  /* Backgrounds - Warm cream tones */
-  --bg-primary: linear-gradient(135deg, #fdfbf7 0%, #f8f3e8 100%);
-  --sidebar-bg: #f2ead8;
+  /* Backgrounds - White and off-white colors */
+  --bg-primary: #ffffff;
+  --sidebar-bg: #f8f8f8;
   --card-bg: #ffffff;
-  --hover-bg: #f5efe3;
-  --table-header-bg: #faf6ed;
+  --hover-bg: #f0f0f0;
+  --table-header-bg: #f5f5f5;
   
-  /* Text Colors */
-  --text-primary: #2c2d23;
-  --text-secondary: var(--color-1);
+  /* Text Colors - Dark colors for contrast */
+  --text-primary: #000000;
+  --text-secondary: #666666;
   
   /* Borders */
-  --border-color: #e3d9c4;
+  --border-color: rgba(0, 0, 0, 0.1);
   
-  /* Accents */
-  --accent-color: rgba(73, 105, 76, 0.5);
-  --accent-color-solid: var(--color-1);
-  --nav-active-bg: rgba(168, 196, 161, 0.2);
+  /* Accents - Use colorful palette minimally (avoid green to not conflict with positive numbers) */
+  --accent-color: var(--blue-slate-rgba-20);
+  --accent-color-solid: var(--blue-slate);
+  --nav-active-bg: var(--blue-slate-rgba-10);
   
-  /* Chart Colors */
-  --chart-primary: var(--color-1);
-  --chart-secondary: var(--color-4);
+  /* Chart Colors - Use colorful palette (avoid green) */
+  --chart-primary: var(--seagrass);
+  --chart-secondary: var(--carrot-orange);
   
-  /* Status Colors - Adjusted for light background */
+  /* Status Colors - Use colorful palette */
   --positive-color: var(--color-1);
   --negative-color: var(--color-5);
   --warning-color: var(--color-4);
@@ -117,20 +206,20 @@ body {
 
 /* Dark theme scrollbar */
 :root[data-theme="dark"] ::-webkit-scrollbar-thumb {
-  background: rgba(168, 196, 161, 0.5);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 :root[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(168, 196, 161, 0.7);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* Light theme scrollbar */
 :root[data-theme="light"] ::-webkit-scrollbar-thumb {
-  background: rgba(73, 105, 76, 0.4);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 :root[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(73, 105, 76, 0.6);
+  background: rgba(0, 0, 0, 0.3);
 }
 
 /* Selection */

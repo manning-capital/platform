@@ -47,12 +47,12 @@
 
 .chart-line {
   stroke: var(--chart-primary);
-  filter: drop-shadow(0 2px 4px rgba(156, 163, 175, 0.3));
+  filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--text-secondary) 30%, transparent));
 }
 
 .chart-point {
   fill: var(--chart-primary);
-  filter: drop-shadow(0 2px 4px rgba(156, 163, 175, 0.4));
+  filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--text-secondary) 40%, transparent));
   transition: r 0.2s ease;
 }
 

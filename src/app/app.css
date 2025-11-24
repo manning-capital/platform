@@ -7,7 +7,7 @@
 .app-container {
   display: flex;
   min-height: 100vh;
-  background: #0f0f1e;
+  background: var(--bg-primary);
 }
 
 /* Sidebar Styles */
@@ -76,7 +76,7 @@
   display: none;
   background: none;
   border: none;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   cursor: pointer;
   padding: 0.5rem;
   position: absolute;
@@ -104,7 +104,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1rem;
-  color: var(--text-secondary, #8b92b0);
+  color: var(--text-secondary);
   text-decoration: none;
   border-radius: 12px;
   transition: all 0.3s ease;
@@ -120,7 +120,7 @@
 
 .nav-item:hover {
   background: var(--hover-bg, rgba(255, 255, 255, 0.05));
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
 }
 
 .nav-item.active {
@@ -132,7 +132,7 @@
 .nav-item .live-indicator {
   width: 8px;
   height: 8px;
-  background: #10b981;
+  background: var(--positive-color);
   border-radius: 50%;
   margin-left: auto;
   animation: pulse 2s infinite;
@@ -160,7 +160,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1rem;
-  color: var(--text-secondary, #8b92b0);
+  color: var(--text-secondary);
   background: none;
   border: none;
   border-radius: 12px;
@@ -175,7 +175,7 @@
 
 .theme-toggle:hover {
   background: var(--hover-bg, rgba(255, 255, 255, 0.05));
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
 }
 
 .theme-toggle svg {
@@ -209,7 +209,7 @@
 .user-avatar svg {
   width: 24px;
   height: 24px;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .user-details {
@@ -218,13 +218,13 @@
 
 .user-name {
   font-weight: 600;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   font-size: 0.9375rem;
 }
 
 .user-status {
   font-size: 0.8125rem;
-  color: var(--text-secondary, #8b92b0);
+  color: var(--text-secondary);
 }
 
 /* Main Content */
@@ -251,7 +251,7 @@
 .mobile-menu-btn {
   background: none;
   border: none;
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
   cursor: pointer;
   padding: 0.5rem;
   display: flex;
@@ -331,7 +331,7 @@
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: color-mix(in srgb, var(--bg-primary) 50%, transparent);
     z-index: 999;
   }
 }

@@ -73,7 +73,7 @@
 .filter-select:focus {
   outline: none;
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 3px var(--blue-slate-rgba-20);
 }
 
 .filter-input::placeholder {
@@ -176,7 +176,7 @@
 .page-btn.active {
   background: var(--accent-color);
   border-color: var(--accent-color);
-  color: white;
+  color: var(--text-primary);
 }
 
 .page-btn:disabled {
@@ -247,21 +247,21 @@
 }
 
 .side-badge.buy {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.5);
+  background: var(--positive-bg);
+  color: var(--positive-color);
+  border: 1px solid var(--positive-border);
 }
 
 .side-badge.sell {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.5);
+  background: var(--negative-bg);
+  color: var(--negative-color);
+  border: 1px solid var(--negative-border);
 }
 
 .side-badge.compound {
-  background: rgba(102, 126, 234, 0.2);
-  color: var(--accent-color-solid);
-  border: 1px solid rgba(102, 126, 234, 0.5);
+  background: var(--warning-bg);
+  color: var(--warning-color);
+  border: 1px solid var(--warning-border);
 }
 
 .trade-list-item-body {
@@ -309,12 +309,12 @@
 }
 
 .status-indicator.open {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
+  background: var(--positive-bg);
+  color: var(--positive-color);
 }
 
 .status-indicator.closed {
-  background: rgba(139, 146, 176, 0.2);
+  background: color-mix(in srgb, var(--text-secondary) 20%, transparent);
   color: var(--text-secondary);
 }
 
@@ -399,8 +399,8 @@
 
 .live-badge {
   padding: 0.375rem 0.875rem;
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
+  background: var(--positive-bg);
+  color: var(--positive-color);
   border-radius: 8px;
   font-size: 0.75rem;
   font-weight: 700;
@@ -409,7 +409,7 @@
 
 .closed-badge {
   padding: 0.375rem 0.875rem;
-  background: rgba(139, 146, 176, 0.2);
+  background: color-mix(in srgb, var(--text-secondary) 20%, transparent);
   color: var(--text-secondary);
   border-radius: 8px;
   font-size: 0.75rem;
@@ -504,7 +504,7 @@
 }
 
 .detail-value.current-price {
-  color: #667eea;
+  color: var(--blue-slate);
 }
 
 .parameters-grid {
@@ -587,13 +587,13 @@
 }
 
 .metric-card.positive {
-  border-color: rgba(16, 185, 129, 0.5);
-  background: rgba(16, 185, 129, 0.05);
+  border-color: var(--positive-border);
+  background: var(--positive-bg-light);
 }
 
 .metric-card.negative {
-  border-color: rgba(239, 68, 68, 0.5);
-  background: rgba(239, 68, 68, 0.05);
+  border-color: var(--negative-border);
+  background: var(--negative-bg-light);
 }
 
 .metric-card-label {
@@ -687,8 +687,8 @@
 .compound-badge {
   display: inline-block;
   padding: 0.25rem 0.5rem;
-  background: var(--accent-color);
-  color: var(--bg-primary);
+  background: var(--warning-bg);
+  color: var(--warning-color);
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 600;

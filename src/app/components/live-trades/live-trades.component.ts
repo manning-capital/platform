@@ -165,7 +165,6 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
       const endDate = this.endDate();
       const page = this.currentPage();
       const pageSize = this.pageSize();
-      const selectedTradeId = this.selectedTrade()?.id;
       
       this.syncFiltersToUrl({
         status,
@@ -175,8 +174,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
         startDate,
         endDate,
         page,
-        pageSize,
-        trade: selectedTradeId || undefined
+        pageSize
       });
     });
   }
@@ -184,19 +182,23 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Read initial query params from snapshot (for when navigating from another route)
     const initialParams = this.route.snapshot.queryParams;
-    if (Object.keys(initialParams).length > 0) {
-      this.isSyncingFromUrl = true;
-      this.syncUrlToFilters(initialParams);
-      this.isSyncingFromUrl = false;
-    }
+    
+    // Always sync from URL on init (even if empty, to set defaults)
+    this.isSyncingFromUrl = true;
+    this.syncUrlToFilters(initialParams);
+    this.isSyncingFromUrl = false;
     
     // Subscribe to query param changes (for browser back/forward and navigation)
     this.route.queryParams
       .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
-        this.isSyncingFromUrl = true;
-        this.syncUrlToFilters(params);
-        this.isSyncingFromUrl = false;
+        // Only sync if params actually changed (avoid loops)
+        const currentParams = this.route.snapshot.queryParams;
+        if (JSON.stringify(currentParams) !== JSON.stringify(params)) {
+          this.isSyncingFromUrl = true;
+          this.syncUrlToFilters(params);
+          this.isSyncingFromUrl = false;
+        }
       });
     
     // Also listen to navigation events to catch when navigating to this route
@@ -207,17 +209,15 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
       )
       .subscribe(() => {
         const params = this.route.snapshot.queryParams;
-        if (Object.keys(params).length > 0) {
-          this.isSyncingFromUrl = true;
-          this.syncUrlToFilters(params);
-          this.isSyncingFromUrl = false;
-        }
+        this.isSyncingFromUrl = true;
+        this.syncUrlToFilters(params);
+        this.isSyncingFromUrl = false;
       });
     
     // After initial sync, allow URL updates
     setTimeout(() => {
       this.isInitializing.set(false);
-    }, 0);
+    }, 100);
   }
 
   ngOnDestroy(): void {
@@ -227,7 +227,6 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
 
   protected selectTrade(trade: Trade): void {
     this.selectedTradeSignal.set(trade);
-    this.updateSelectedTradeInUrl(trade.id);
   }
 
   protected isTradeSelected(trade: Trade): boolean {
@@ -438,110 +437,94 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
     if (params.pageSize && params.pageSize !== 10) {
       queryParams['pageSize'] = params.pageSize.toString();
     }
-    if (params.trade) {
-      queryParams['trade'] = params.trade;
-    }
     
-    // Update URL without triggering navigation
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams,
-      queryParamsHandling: 'merge',
-      replaceUrl: true
-    });
+    // Get current URL params to compare
+    const currentParams = this.route.snapshot.queryParams;
+    
+    // Normalize both objects for comparison (remove undefined values)
+    const normalizeParams = (p: Params): Params => {
+      const normalized: Params = {};
+      Object.keys(p).forEach(key => {
+        if (p[key] !== undefined && p[key] !== null && p[key] !== '') {
+          normalized[key] = p[key];
+        }
+      });
+      return normalized;
+    };
+    
+    const currentNormalized = normalizeParams(currentParams);
+    const newNormalized = normalizeParams(queryParams);
+    
+    // Only update URL if params actually changed
+    if (JSON.stringify(currentNormalized) !== JSON.stringify(newNormalized)) {
+      // Update URL without triggering navigation
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: newNormalized,
+        queryParamsHandling: 'replace',
+        replaceUrl: true
+      });
+    }
   }
 
   private syncUrlToFilters(params: Params): void {
-    // Set filter signals from URL params
-    if (params['status']) {
-      this.filterStatus.set(params['status'] as 'ALL' | 'OPEN' | 'CLOSED');
-    }
-    if (params['side']) {
-      this.filterSide.set(params['side'] as 'ALL' | 'BUY' | 'SELL' | 'COMPOUND');
-    }
-    if (params['model']) {
-      this.filterModel.set(params['model']);
-    }
-    if (params['search']) {
-      this.searchTerm.set(params['search']);
-    }
+    // Set filter signals from URL params (use defaults if not in URL)
+    this.filterStatus.set((params['status'] as 'ALL' | 'OPEN' | 'CLOSED') || 'ALL');
+    this.filterSide.set((params['side'] as 'ALL' | 'BUY' | 'SELL' | 'COMPOUND') || 'ALL');
+    this.filterModel.set(params['model'] || 'ALL');
+    this.searchTerm.set(params['search'] || '');
+    
     if (params['startDate']) {
       const date = new Date(params['startDate']);
       date.setHours(0, 0, 0, 0);
       this.startDate.set(date);
+    } else {
+      this.startDate.set(this.getDefaultStartDate());
     }
+    
     if (params['endDate']) {
       const date = new Date(params['endDate']);
       date.setHours(23, 59, 59, 999);
       this.endDate.set(date);
+    } else {
+      const today = new Date();
+      today.setHours(23, 59, 59, 999);
+      this.endDate.set(today);
     }
+    
     if (params['page']) {
       const page = parseInt(params['page'], 10);
       if (!isNaN(page) && page > 0) {
         this.currentPage.set(page);
+      } else {
+        this.currentPage.set(1);
       }
+    } else {
+      this.currentPage.set(1);
     }
+    
     if (params['pageSize']) {
       const pageSize = parseInt(params['pageSize'], 10);
       if (!isNaN(pageSize) && pageSize > 0) {
         this.pageSize.set(pageSize);
+      } else {
+        this.pageSize.set(10);
       }
+    } else {
+      this.pageSize.set(10);
     }
     
-    // Set selected trade from URL after filters are applied
-    // Use setTimeout to ensure filtered list is updated
+    // Auto-select first trade in filtered list if none selected
     setTimeout(() => {
-      if (params['trade']) {
-        const tradeId = params['trade'];
-        // First try to find in all trades
-        const allTrades = this.allTrades();
-        const trade = allTrades.find(t => t.id === tradeId);
-        if (trade) {
-          // Check if trade is in filtered list
-          const filteredTrades = this.filteredTrades();
-          if (filteredTrades.some(t => t.id === tradeId)) {
-            this.selectedTradeSignal.set(trade);
-          } else {
-            // Trade exists but not in filtered list, select first in filtered list
-            if (filteredTrades.length > 0) {
-              this.selectedTradeSignal.set(filteredTrades[0]);
-            } else {
-              this.selectedTradeSignal.set(null);
-            }
-          }
-        } else {
-          // Trade not found, select first in filtered list
-          const filteredTrades = this.filteredTrades();
-          if (filteredTrades.length > 0) {
-            this.selectedTradeSignal.set(filteredTrades[0]);
-          } else {
-            this.selectedTradeSignal.set(null);
-          }
-        }
-      } else {
-        // If no trade in URL, select first trade in filtered list
+      if (!this.selectedTrade()) {
         const filteredTrades = this.filteredTrades();
         if (filteredTrades.length > 0) {
           this.selectedTradeSignal.set(filteredTrades[0]);
-        } else {
-          this.selectedTradeSignal.set(null);
         }
       }
     }, 0);
   }
 
-  private updateSelectedTradeInUrl(tradeId: string): void {
-    const currentParams = this.route.snapshot.queryParams;
-    this.syncFiltersToUrl({
-      ...currentParams,
-      trade: tradeId
-    });
-  }
-
-  private getSelectedTradeFromUrl(): string | null {
-    const params = this.route.snapshot.queryParams;
-    return params['trade'] || null;
-  }
 
   private buildQueryParams(): Params {
     return {
@@ -568,8 +551,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
           : undefined;
       })(),
       page: this.currentPage() !== 1 ? this.currentPage().toString() : undefined,
-      pageSize: this.pageSize() !== 10 ? this.pageSize().toString() : undefined,
-      trade: this.selectedTrade()?.id || undefined
+      pageSize: this.pageSize() !== 10 ? this.pageSize().toString() : undefined
     };
   }
 
@@ -582,7 +564,6 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
     endDate: Date;
     page: number;
     pageSize: number;
-    trade: string | null;
   } {
     return {
       status: (params['status'] as 'ALL' | 'OPEN' | 'CLOSED') || 'ALL',
@@ -592,8 +573,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
       startDate: params['startDate'] ? new Date(params['startDate']) : this.getDefaultStartDate(),
       endDate: params['endDate'] ? new Date(params['endDate']) : new Date(),
       page: params['page'] ? parseInt(params['page'], 10) : 1,
-      pageSize: params['pageSize'] ? parseInt(params['pageSize'], 10) : 10,
-      trade: params['trade'] || null
+      pageSize: params['pageSize'] ? parseInt(params['pageSize'], 10) : 10
     };
   }
 }

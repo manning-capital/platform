@@ -46,7 +46,7 @@
 .model-card:hover {
   border-color: var(--accent-color);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  box-shadow: 0 4px 12px var(--blue-slate-rgba-20);
 }
 
 .model-card-header {
@@ -73,25 +73,25 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.375rem 0.75rem;
-  background: rgba(239, 68, 68, 0.2);
-  border: 1px solid rgba(239, 68, 68, 0.5);
+  background: var(--negative-bg);
+  border: 1px solid var(--negative-border);
   border-radius: 6px;
-  color: #ef4444;
+  color: var(--negative-color);
   font-weight: 600;
   font-size: 0.75rem;
   white-space: nowrap;
 }
 
 .model-card-status.active {
-  background: rgba(16, 185, 129, 0.2);
-  border-color: rgba(16, 185, 129, 0.5);
-  color: #10b981;
+  background: var(--positive-bg);
+  border-color: var(--positive-border);
+  color: var(--positive-color);
 }
 
 .model-card-status.paused {
-  background: rgba(245, 158, 11, 0.2);
-  border-color: rgba(245, 158, 11, 0.5);
-  color: #f59e0b;
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  color: var(--warning-color);
 }
 
 .status-indicator {
@@ -244,18 +244,18 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: rgba(239, 68, 68, 0.2);
-  border: 1px solid rgba(239, 68, 68, 0.5);
+  background: var(--negative-bg);
+  border: 1px solid var(--negative-border);
   border-radius: 8px;
-  color: #ef4444;
+  color: var(--negative-color);
   font-weight: 600;
   font-size: 0.875rem;
 }
 
 .model-status.active {
-  background: rgba(16, 185, 129, 0.2);
-  border-color: rgba(16, 185, 129, 0.5);
-  color: #10b981;
+  background: var(--positive-bg);
+  border-color: var(--positive-border);
+  color: var(--positive-color);
 }
 
 .key-metrics-grid {
@@ -318,11 +318,11 @@
 }
 
 .metric-value.positive {
-  color: #10b981;
+  color: var(--positive-color);
 }
 
 .metric-value.negative {
-  color: #ef4444;
+  color: var(--negative-color);
 }
 
 .advanced-metrics {
@@ -425,27 +425,27 @@
 }
 
 .side-badge.buy {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
+  background: var(--positive-bg);
+  color: var(--positive-color);
 }
 
 .side-badge.sell {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background: var(--negative-bg);
+  color: var(--negative-color);
 }
 
 .side-badge.compound {
-  background: rgba(102, 126, 234, 0.2);
-  color: var(--accent-color-solid);
-  border: 1px solid rgba(102, 126, 234, 0.5);
+  background: var(--warning-bg);
+  color: var(--warning-color);
+  border: 1px solid var(--warning-border);
 }
 
 .positive {
-  color: #10b981;
+  color: var(--positive-color);
 }
 
 .negative {
-  color: #ef4444;
+  color: var(--negative-color);
 }
 
 .trade-history-header {
@@ -532,8 +532,8 @@
 .compound-badge-small {
   display: inline-block;
   padding: 0.125rem 0.375rem;
-  background: var(--accent-color);
-  color: var(--bg-primary);
+  background: var(--warning-bg);
+  color: var(--warning-color);
   border-radius: 3px;
   font-size: 0.625rem;
   font-weight: 700;
@@ -553,13 +553,13 @@
 }
 
 .status-badge.open {
-  background: rgba(156, 163, 175, 0.2);
+  background: color-mix(in srgb, var(--text-secondary) 20%, transparent);
   color: var(--accent-color-solid);
 }
 
 .status-badge.closed {
-  background: rgba(139, 146, 176, 0.2);
-  color: #8b92b0;
+  background: color-mix(in srgb, var(--text-secondary) 20%, transparent);
+  color: var(--text-secondary);
 }
 
 .no-trades {
