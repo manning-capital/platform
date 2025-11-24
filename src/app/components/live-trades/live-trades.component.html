@@ -260,7 +260,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @for (position of trade.positions; track position.id) {
+                    @for (position of trade.trades; track position.id) {
                       <tr>
                         <td class="position-pair-cell">
                           <span class="position-from">{{ position.fromAsset }}</span>
@@ -290,7 +290,7 @@
 
               <!-- Mobile Card View -->
               <div class="positions-cards-container">
-                @for (position of trade.positions; track position.id) {
+                @for (position of trade.trades; track position.id) {
                   <div class="position-card">
                     <div class="position-card-header">
                       <div class="position-card-pair">
@@ -383,7 +383,7 @@
               <div class="metric-card">
                 <div class="metric-card-label">Position Value</div>
                 <div class="metric-card-value">{{ formatCurrency(getTotalPositionValue(trade)) }}</div>
-                <div class="metric-card-subtitle">{{ trade.positions.length }} position(s)</div>
+                <div class="metric-card-subtitle">{{ trade.trades.length }} trade(s)</div>
               </div>
               <div class="metric-card">
                 <div class="metric-card-label">Cost Basis</div>
@@ -407,7 +407,7 @@
               </div>
               <div class="detail-item">
                 <span class="detail-label">Positions</span>
-                <span class="detail-value">{{ trade.positions.length }}</span>
+                <span class="detail-value">{{ trade.trades.length }}</span>
               </div>
               <div class="detail-item">
                 <span class="detail-label">Entry Time</span>
@@ -417,7 +417,7 @@
           </section>
 
           <!-- Price Information -->
-          @if (trade.positions.length === 1) {
+          @if (trade.trades.length === 1) {
             <section class="detail-section">
               <h3 class="section-title">Price Information</h3>
               @if (getPrimaryPosition(trade); as pos) {

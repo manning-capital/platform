@@ -1,4 +1,4 @@
-export interface Position {
+export interface Trade {
   id: string;
   fromAsset: string;
   toAsset: string;
@@ -11,10 +11,10 @@ export interface Position {
   pnlPercent: number;
 }
 
-export interface Trade {
+export interface ModelTrade {
   id: string;
   modelId: string;
-  positions: Position[];
+  trades: Trade[];
   status: 'OPEN' | 'CLOSED' | 'PENDING';
   timestamp: Date;
   pnl: number;
@@ -62,7 +62,7 @@ export interface TradeMetrics {
   strategyConditions: StrategyCondition[];
 }
 
-export interface QuantModel {
+export interface Model {
   id: string;
   name: string;
   strategy: string;

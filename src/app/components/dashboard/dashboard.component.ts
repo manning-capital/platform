@@ -2,7 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TradingService } from '../../services/trading.service';
-import { Trade } from '../../models/trade.model';
+import { ModelTrade } from '../../models/trade.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -22,21 +22,21 @@ export class DashboardComponent {
     );
   });
 
-  protected getTradeSide(trade: Trade): 'BUY' | 'SELL' | 'COMPOUND' {
+  protected getTradeSide(trade: ModelTrade): 'BUY' | 'SELL' | 'COMPOUND' {
     return this.tradingService.getTradeSide(trade);
   }
 
-  protected getTradeTags(trade: Trade): string[] {
+  protected getTradeTags(trade: ModelTrade): string[] {
     const model = this.models().find(m => m.id === trade.modelId);
     return this.tradingService.getTradeTags(trade, model);
   }
 
-  protected getTradeDisplaySymbol(trade: Trade): string {
+  protected getTradeDisplaySymbol(trade: ModelTrade): string {
     return this.tradingService.getTradeDisplaySymbol(trade);
   }
 
-  protected getPrimaryPosition(trade: Trade) {
-    return this.tradingService.getPrimaryPosition(trade);
+  protected getPrimaryPosition(trade: ModelTrade) {
+    return this.tradingService.getPrimaryTrade(trade);
   }
 
   protected toggleModel(modelId: string): void {
@@ -65,7 +65,7 @@ export class DashboardComponent {
     return 'Just now';
   }
 
-  protected isPaperTrading(trade: Trade): boolean {
+  protected isPaperTrading(trade: ModelTrade): boolean {
     const model = this.models().find(m => m.id === trade.modelId);
     return model?.paperTrading ?? false;
   }

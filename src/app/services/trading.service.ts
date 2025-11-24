@@ -1,67 +1,77 @@
 import { Injectable, signal } from '@angular/core';
-import { Trade, Position, QuantModel, DashboardStats, TradeChartData, TimeSeriesPoint, SignalLevel, TradeMetrics, MetricData, StrategyCondition, ModelParameters, ModelParameter } from '../models/trade.model';
+import { ModelTrade, Trade, Model, DashboardStats, TradeChartData, TimeSeriesPoint, SignalLevel, TradeMetrics, MetricData, StrategyCondition, ModelParameters, ModelParameter } from '../models/trade.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TradingService {
-  private models = signal<QuantModel[]>([]);
-  private trades = signal<Trade[]>([]);
+  private models = signal<Model[]>([]);
+  private modelTrades = signal<ModelTrade[]>([]);
   
   readonly models$ = this.models.asReadonly();
-  readonly trades$ = this.trades.asReadonly();
+  readonly trades$ = this.modelTrades.asReadonly();
 
   constructor() {
     this.initializeMockData();
     this.startLiveUpdates();
   }
 
-  // Helper method to normalize old-format trades to new format
-  private normalizeTrade(trade: any): Trade {
-    // If already in new format, return as-is
-    if (trade.positions && Array.isArray(trade.positions)) {
-      return trade as Trade;
+  // Helper method to normalize old-format model trades to new format
+  private normalizeModelTrade(modelTrade: any): ModelTrade {
+    // If already in new format, ensure all trades have timestamps
+    if (modelTrade.trades && Array.isArray(modelTrade.trades)) {
+      return modelTrade as ModelTrade;
     }
 
-    // Convert old format to new format
-    const position: Position = {
-      id: `${trade.id}-p1`,
+    // Convert old format to new format (legacy support)
+    if (modelTrade.positions && Array.isArray(modelTrade.positions)) {
+      return {
+        ...modelTrade,
+        trades: modelTrade.positions.map((pos: any) => ({
+          ...pos
+        }))
+      };
+    }
+
+    // Convert very old format (single position) to new format
+    const trade: Trade = {
+      id: `${modelTrade.id}-t1`,
       fromAsset: 'USD',
-      toAsset: trade.symbol,
-      side: trade.side,
-      quantity: trade.quantity,
-      entryPrice: trade.entryPrice,
-      currentPrice: trade.currentPrice,
-      exitPrice: trade.exitPrice,
-      pnl: trade.pnl,
-      pnlPercent: trade.pnlPercent
+      toAsset: modelTrade.symbol,
+      side: modelTrade.side,
+      quantity: modelTrade.quantity,
+      entryPrice: modelTrade.entryPrice,
+      currentPrice: modelTrade.currentPrice,
+      exitPrice: modelTrade.exitPrice,
+      pnl: modelTrade.pnl,
+      pnlPercent: modelTrade.pnlPercent
     };
 
     return {
-      id: trade.id,
-      modelId: trade.modelId,
-      positions: [position],
-      status: trade.status,
-      timestamp: trade.timestamp,
-      pnl: trade.pnl,
-      pnlPercent: trade.pnlPercent
+      id: modelTrade.id,
+      modelId: modelTrade.modelId,
+      trades: [trade],
+      status: modelTrade.status,
+      timestamp: modelTrade.timestamp,
+      pnl: modelTrade.pnl,
+      pnlPercent: modelTrade.pnlPercent
     };
   }
 
-  getPrimaryPosition(trade: Trade): Position {
-    if (!trade.positions || trade.positions.length === 0) {
-      throw new Error(`Trade ${trade.id} has no positions`);
+  getPrimaryTrade(modelTrade: ModelTrade): Trade {
+    if (!modelTrade.trades || modelTrade.trades.length === 0) {
+      throw new Error(`ModelTrade ${modelTrade.id} has no trades`);
     }
-    return trade.positions[0];
+    return modelTrade.trades[0];
   }
 
-  getTradeSide(trade: Trade): 'BUY' | 'SELL' | 'COMPOUND' {
-    if (!trade.positions || trade.positions.length === 0) {
+  getTradeSide(modelTrade: ModelTrade): 'BUY' | 'SELL' | 'COMPOUND' {
+    if (!modelTrade.trades || modelTrade.trades.length === 0) {
       return 'COMPOUND';
     }
     
-    const firstSide = trade.positions[0].side;
-    const allSameSide = trade.positions.every(pos => pos.side === firstSide);
+    const firstSide = modelTrade.trades[0].side;
+    const allSameSide = modelTrade.trades.every(t => t.side === firstSide);
     
     if (allSameSide) {
       return firstSide;
@@ -69,11 +79,11 @@ export class TradingService {
     return 'COMPOUND';
   }
 
-  getTradeTags(trade: Trade, model?: QuantModel): string[] {
+  getTradeTags(modelTrade: ModelTrade, model?: Model): string[] {
     const tags: string[] = [];
     
     // Add side tag (BUY, SELL, or COMPOUND)
-    const side = this.getTradeSide(trade);
+    const side = this.getTradeSide(modelTrade);
     tags.push(side);
     
     // Add paper tag if model is paper trading
@@ -84,28 +94,28 @@ export class TradingService {
     return tags;
   }
 
-  getTradeDisplaySymbol(trade: Trade): string {
-    if (trade.positions.length > 1) {
-      return trade.positions.map(p => `${p.fromAsset}/${p.toAsset}`).join(' + ');
+  getTradeDisplaySymbol(modelTrade: ModelTrade): string {
+    if (modelTrade.trades.length > 1) {
+      return modelTrade.trades.map(t => `${t.fromAsset}/${t.toAsset}`).join(' + ');
     }
-    const primary = this.getPrimaryPosition(trade);
+    const primary = this.getPrimaryTrade(modelTrade);
     return primary.toAsset;
   }
 
-  getTradeTotalPnL(trade: Trade): number {
-    return trade.positions.reduce((sum, pos) => sum + pos.pnl, 0);
+  getTradeTotalPnL(modelTrade: ModelTrade): number {
+    return modelTrade.trades.reduce((sum, t) => sum + t.pnl, 0);
   }
 
-  getTradeTotalPnLPercent(trade: Trade): number {
-    const totalValue = trade.positions.reduce((sum, pos) => sum + (pos.entryPrice * pos.quantity), 0);
+  getTradeTotalPnLPercent(modelTrade: ModelTrade): number {
+    const totalValue = modelTrade.trades.reduce((sum: number, t: Trade) => sum + (t.entryPrice * t.quantity), 0);
     if (totalValue === 0) return 0;
-    const totalPnL = this.getTradeTotalPnL(trade);
+    const totalPnL = this.getTradeTotalPnL(modelTrade);
     return (totalPnL / totalValue) * 100;
   }
 
   private initializeMockData(): void {
     // Initialize with mock quantitative models
-    const mockModels: QuantModel[] = [
+    const mockModels: Model[] = [
       {
         id: '1',
         name: 'Mean Reversion Alpha',
@@ -989,10 +999,10 @@ export class TradingService {
     ];
 
     // Normalize all trades to new format
-    const normalizedTrades = mockTrades.map(trade => this.normalizeTrade(trade));
+    const normalizedTrades = mockTrades.map(trade => this.normalizeModelTrade(trade));
 
     this.models.set(mockModels);
-    this.trades.set(normalizedTrades);
+    this.modelTrades.set(normalizedTrades);
   }
 
   private startLiveUpdates(): void {
@@ -1003,57 +1013,49 @@ export class TradingService {
   }
 
   private updateTradePrices(): void {
-    const currentTrades = this.trades();
-    const updatedTrades = currentTrades.map(trade => {
+    const currentTrades = this.modelTrades();
+    const updatedTrades = currentTrades.map((trade: ModelTrade) => {
       if (trade.status === 'OPEN') {
-        // Update all positions
-        const updatedPositions = trade.positions.map(position => {
+        // Update all trades
+        const updatedTradesList = trade.trades.map((t: Trade) => {
           // Simulate price movement (-0.5% to +0.5%)
-          const priceChange = (Math.random() - 0.5) * position.currentPrice * 0.01;
-          const newPrice = Number((position.currentPrice + priceChange).toFixed(2));
+          const priceChange = (Math.random() - 0.5) * t.currentPrice * 0.01;
+          const newPrice = Number((t.currentPrice + priceChange).toFixed(2));
           
-          const pnl = position.side === 'BUY' 
-            ? (newPrice - position.entryPrice) * position.quantity
-            : (position.entryPrice - newPrice) * position.quantity;
-          const pnlPercent = ((pnl / (position.entryPrice * position.quantity)) * 100);
+          const pnl = t.side === 'BUY' 
+            ? (newPrice - t.entryPrice) * t.quantity
+            : (t.entryPrice - newPrice) * t.quantity;
+          const pnlPercent = ((pnl / (t.entryPrice * t.quantity)) * 100);
 
           return {
-            ...position,
+            ...t,
             currentPrice: newPrice,
             pnl: Number(pnl.toFixed(2)),
             pnlPercent: Number(pnlPercent.toFixed(2))
           };
         });
 
-        // Calculate trade-level P&L
-        const totalPnL = updatedPositions.reduce((sum, pos) => sum + pos.pnl, 0);
-        const totalValue = updatedPositions.reduce((sum, pos) => sum + (pos.entryPrice * pos.quantity), 0);
+        // Calculate model trade-level P&L
+        const totalPnL = updatedTradesList.reduce((sum: number, t: Trade) => sum + t.pnl, 0);
+        const totalValue = updatedTradesList.reduce((sum: number, t: Trade) => sum + (t.entryPrice * t.quantity), 0);
         const totalPnLPercent = totalValue > 0 ? (totalPnL / totalValue) * 100 : 0;
-
-        // Update legacy fields for backward compatibility
-        const primaryPosition = updatedPositions[0];
         
         return {
           ...trade,
-          positions: updatedPositions,
+          trades: updatedTradesList,
           pnl: Number(totalPnL.toFixed(2)),
-          pnlPercent: Number(totalPnLPercent.toFixed(2)),
-          // Legacy fields
-          currentPrice: primaryPosition.currentPrice,
-          entryPrice: primaryPosition.entryPrice,
-          quantity: primaryPosition.quantity,
-          side: primaryPosition.side
+          pnlPercent: Number(totalPnLPercent.toFixed(2))
         };
       }
       return trade;
     });
 
-    this.trades.set(updatedTrades);
+    this.modelTrades.set(updatedTrades);
   }
 
   getDashboardStats(): DashboardStats {
     const models = this.models();
-    const trades = this.trades();
+    const trades = this.modelTrades();
     const openTrades = trades.filter(t => t.status === 'OPEN');
     
     const totalPnL = trades.reduce((sum, t) => sum + t.pnl, 0);
@@ -1080,12 +1082,12 @@ export class TradingService {
     };
   }
 
-  getModelById(id: string): QuantModel | undefined {
+  getModelById(id: string): Model | undefined {
     return this.models().find(m => m.id === id);
   }
 
-  getTradesByModel(modelId: string): Trade[] {
-    return this.trades().filter(t => t.modelId === modelId);
+  getTradesByModel(modelId: string): ModelTrade[] {
+    return this.modelTrades().filter((t: ModelTrade) => t.modelId === modelId);
   }
 
   toggleModelStatus(modelId: string): void {
@@ -1095,7 +1097,7 @@ export class TradingService {
         return {
           ...m,
           status: m.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE'
-        } as QuantModel;
+        } as Model;
       }
       return m;
     });
@@ -1103,7 +1105,7 @@ export class TradingService {
   }
 
   getTradeChartData(tradeId: string): TradeChartData | null {
-    const trade = this.trades().find(t => t.id === tradeId);
+    const trade = this.modelTrades().find((t: ModelTrade) => t.id === tradeId);
     if (!trade) return null;
 
     const model = this.getModelById(trade.modelId);
@@ -1114,7 +1116,7 @@ export class TradingService {
   }
 
   getTradeMetrics(tradeId: string): TradeMetrics | null {
-    const trade = this.trades().find(t => t.id === tradeId);
+    const trade = this.modelTrades().find((t: ModelTrade) => t.id === tradeId);
     if (!trade) return null;
 
     const model = this.getModelById(trade.modelId);
@@ -1131,14 +1133,14 @@ export class TradingService {
   }
 
   getModelParameters(tradeId: string): ModelParameters | null {
-    const trade = this.trades().find(t => t.id === tradeId);
+    const trade = this.modelTrades().find((t: ModelTrade) => t.id === tradeId);
     if (!trade) return null;
 
     const model = this.getModelById(trade.modelId);
     if (!model) return null;
 
-    const primaryPosition = this.getPrimaryPosition(trade);
-    return this.generateModelParameters(model.strategy, primaryPosition.entryPrice);
+    const primaryTrade = this.getPrimaryTrade(trade);
+    return this.generateModelParameters(model.strategy, primaryTrade.entryPrice);
   }
 
   private generateModelParameters(strategy: string, entryPrice: number): ModelParameters {
@@ -1190,14 +1192,14 @@ export class TradingService {
     };
   }
 
-  private generateChartDataForStrategy(trade: Trade, strategy: string, metricName: string): TradeChartData {
-    const primaryPosition = this.getPrimaryPosition(trade);
+  private generateChartDataForStrategy(trade: ModelTrade, strategy: string, metricName: string): TradeChartData {
+    const primaryTrade = this.getPrimaryTrade(trade);
     const now = Date.now();
     const hourMs = 60 * 60 * 1000;
     const points = 50; // Last 50 data points
     
     const timeSeries: TimeSeriesPoint[] = [];
-    const basePrice = primaryPosition.entryPrice;
+    const basePrice = primaryTrade.entryPrice;
     const baseValue = metricName === 'Price' ? basePrice : (metricName === 'Volume' ? 1000000 : 50);
     
     // Generate time series with different patterns based on strategy and metric
@@ -1212,7 +1214,7 @@ export class TradingService {
             value = basePrice + Math.sin(i / 5) * (basePrice * 0.02) + (Math.random() - 0.5) * (basePrice * 0.01);
             break;
           case 'Trend Following':
-            const trend = primaryPosition.side === 'BUY' ? 1 : -1;
+            const trend = primaryTrade.side === 'BUY' ? 1 : -1;
             value = basePrice + (i / points) * (basePrice * 0.05) * trend + (Math.random() - 0.5) * (basePrice * 0.01);
             break;
           case 'Options Strategy':
@@ -1239,14 +1241,14 @@ export class TradingService {
     }
     
     // Add current value as last point
-    const currentValue = metricName === 'Price' ? primaryPosition.currentPrice : timeSeries[timeSeries.length - 1].value;
+    const currentValue = metricName === 'Price' ? primaryTrade.currentPrice : timeSeries[timeSeries.length - 1].value;
     timeSeries.push({ 
       timestamp: new Date(now), 
       value: currentValue
     });
 
     // Generate signal levels based on strategy and metric
-    const signalLevels = this.generateSignalLevels(trade, strategy, metricName);
+    const signalLevels = this.generateSignalLevels(primaryTrade, strategy, metricName);
 
     return {
       tradeId: trade.id,
@@ -1257,7 +1259,7 @@ export class TradingService {
     };
   }
 
-  private generateMetricsForStrategy(trade: Trade, strategy: string): MetricData[] {
+  private generateMetricsForStrategy(trade: ModelTrade, strategy: string): MetricData[] {
     const metrics: MetricData[] = [];
 
     // All strategies have Price
@@ -1322,11 +1324,11 @@ export class TradingService {
     return metrics;
   }
 
-  private generateStrategyConditions(trade: Trade, strategy: string): StrategyCondition[] {
+  private generateStrategyConditions(trade: ModelTrade, strategy: string): StrategyCondition[] {
     const conditions: StrategyCondition[] = [];
-    const primaryPosition = this.getPrimaryPosition(trade);
-    const basePrice = primaryPosition.entryPrice;
-    const currentPrice = primaryPosition.currentPrice;
+    const primaryTrade = this.getPrimaryTrade(trade);
+    const basePrice = primaryTrade.entryPrice;
+    const currentPrice = primaryTrade.currentPrice;
 
     switch (strategy) {
       case 'Mean Reversion':
@@ -1352,9 +1354,9 @@ export class TradingService {
           id: 'stop-loss',
           description: 'Stop loss not triggered',
           currentValue: currentPrice.toFixed(2),
-          targetValue: (basePrice * (primaryPosition.side === 'BUY' ? 0.97 : 1.03)).toFixed(2),
-          operator: primaryPosition.side === 'BUY' ? 'above' : 'below',
-          isMet: primaryPosition.side === 'BUY' ? currentPrice > basePrice * 0.97 : currentPrice < basePrice * 1.03,
+          targetValue: (basePrice * (primaryTrade.side === 'BUY' ? 0.97 : 1.03)).toFixed(2),
+          operator: primaryTrade.side === 'BUY' ? 'above' : 'below',
+          isMet: primaryTrade.side === 'BUY' ? currentPrice > basePrice * 0.97 : currentPrice < basePrice * 1.03,
           type: 'stopLoss'
         });
         break;
@@ -1362,7 +1364,7 @@ export class TradingService {
         conditions.push({
           id: 'trend-reversal',
           description: 'Trend reversal detected',
-          currentValue: primaryPosition.side === 'BUY' ? 'Uptrend' : 'Downtrend',
+          currentValue: primaryTrade.side === 'BUY' ? 'Uptrend' : 'Downtrend',
           targetValue: 'Reversal',
           operator: 'equals',
           isMet: false,
@@ -1381,9 +1383,9 @@ export class TradingService {
           id: 'profit-target',
           description: 'Profit target reached',
           currentValue: ((currentPrice / basePrice - 1) * 100).toFixed(2) + '%',
-          targetValue: (primaryPosition.side === 'BUY' ? '+8%' : '-8%'),
-          operator: primaryPosition.side === 'BUY' ? 'above' : 'below',
-          isMet: primaryPosition.side === 'BUY' ? currentPrice >= basePrice * 1.08 : currentPrice <= basePrice * 0.92,
+          targetValue: (primaryTrade.side === 'BUY' ? '+8%' : '-8%'),
+          operator: primaryTrade.side === 'BUY' ? 'above' : 'below',
+          isMet: primaryTrade.side === 'BUY' ? currentPrice >= basePrice * 1.08 : currentPrice <= basePrice * 0.92,
           type: 'exit'
         });
         break;
@@ -1412,7 +1414,7 @@ export class TradingService {
           currentValue: ((currentPrice / basePrice - 1) * 100).toFixed(2) + '%',
           targetValue: '+3%',
           operator: 'above',
-          isMet: primaryPosition.side === 'BUY' ? currentPrice >= basePrice * 1.03 : currentPrice <= basePrice * 0.97,
+          isMet: primaryTrade.side === 'BUY' ? currentPrice >= basePrice * 1.03 : currentPrice <= basePrice * 0.97,
           type: 'exit'
         });
         break;
@@ -1429,10 +1431,10 @@ export class TradingService {
         conditions.push({
           id: 'inventory-limit',
           description: 'Inventory within limits',
-          currentValue: primaryPosition.quantity.toString(),
+          currentValue: primaryTrade.quantity.toString(),
           targetValue: '< 150',
           operator: 'below',
-          isMet: primaryPosition.quantity < 150,
+          isMet: primaryTrade.quantity < 150,
           type: 'exit'
         });
         conditions.push({
@@ -1455,21 +1457,20 @@ export class TradingService {
       // Non-price metrics don't have traditional entry/exit levels
       return [];
     }
-    const primaryPosition = this.getPrimaryPosition(trade);
     const levels: SignalLevel[] = [];
-    const basePrice = primaryPosition.entryPrice;
+    const basePrice = trade.entryPrice;
 
     // Entry level (always at entry price)
     levels.push({
       label: 'Entry',
-      value: primaryPosition.entryPrice,
+      value: trade.entryPrice,
       type: 'entry'
     });
 
     switch (strategy) {
       case 'Mean Reversion':
         // Stop loss further away, take profit closer
-        if (primaryPosition.side === 'BUY') {
+        if (trade.side === 'BUY') {
           levels.push({
             label: 'Stop Loss',
             value: basePrice * 0.97,
@@ -1495,7 +1496,7 @@ export class TradingService {
         break;
       case 'Trend Following':
         // Wider stop loss, higher take profit
-        if (primaryPosition.side === 'BUY') {
+        if (trade.side === 'BUY') {
           levels.push({
             label: 'Stop Loss',
             value: basePrice * 0.95,
@@ -1521,7 +1522,7 @@ export class TradingService {
         break;
       case 'Options Strategy':
         // Multiple exit levels
-        if (primaryPosition.side === 'BUY') {
+        if (trade.side === 'BUY') {
           levels.push({
             label: 'Stop Loss',
             value: basePrice * 0.96,

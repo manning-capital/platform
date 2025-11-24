@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { TradingService } from '../../services/trading.service';
 import { Subject, takeUntil } from 'rxjs';
-import { Trade } from '../../models/trade.model';
+import { ModelTrade } from '../../models/trade.model';
 
 @Component({
   selector: 'app-model-performance',
@@ -104,21 +104,21 @@ export class ModelPerformanceComponent implements OnInit, OnDestroy {
     return winAmount / lossAmount;
   }
 
-  protected getTradeSide(trade: Trade): 'BUY' | 'SELL' | 'COMPOUND' {
+  protected getTradeSide(trade: ModelTrade): 'BUY' | 'SELL' | 'COMPOUND' {
     return this.tradingService.getTradeSide(trade);
   }
 
-  protected getTradeTags(trade: Trade): string[] {
+  protected getTradeTags(trade: ModelTrade): string[] {
     const model = this.models().find(m => m.id === trade.modelId);
     return this.tradingService.getTradeTags(trade, model);
   }
 
-  protected getTradeDisplaySymbol(trade: Trade): string {
+  protected getTradeDisplaySymbol(trade: ModelTrade): string {
     return this.tradingService.getTradeDisplaySymbol(trade);
   }
 
-  protected getPrimaryPosition(trade: Trade) {
-    return this.tradingService.getPrimaryPosition(trade);
+  protected getPrimaryPosition(trade: ModelTrade) {
+    return this.tradingService.getPrimaryTrade(trade);
   }
 
   // Pagination methods

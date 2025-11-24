@@ -205,8 +205,8 @@
                       }
                     </td>
                     <td>
-                      @if (trade.positions.length > 1) {
-                        {{ trade.positions.length }} pos
+                      @if (trade.trades.length > 1) {
+                        {{ trade.trades.length }} trades
                       } @else {
                         {{ getPrimaryPosition(trade).quantity }}
                       }
@@ -265,8 +265,8 @@
                   <div class="trade-card-row">
                     <span class="trade-card-label">Quantity:</span>
                     <span class="trade-card-value">
-                      @if (trade.positions.length > 1) {
-                        {{ trade.positions.length }} positions
+                      @if (trade.trades.length > 1) {
+                        {{ trade.trades.length }} trades
                       } @else {
                         {{ getPrimaryPosition(trade).quantity }}
                       }

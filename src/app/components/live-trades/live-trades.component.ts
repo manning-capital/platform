@@ -5,7 +5,7 @@ import { ActivatedRoute, Router, Params, NavigationEnd } from '@angular/router';
 import { filter, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { TradingService } from '../../services/trading.service';
-import { Trade } from '../../models/trade.model';
+import { ModelTrade } from '../../models/trade.model';
 import { TradeMetricsComponent } from '../trade-metrics/trade-metrics.component';
 
 @Component({
@@ -57,29 +57,29 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
     this.allTrades().filter(t => t.status === 'CLOSED')
   );
   
-  protected getTradeSide(trade: Trade): 'BUY' | 'SELL' | 'COMPOUND' {
+  protected getTradeSide(trade: ModelTrade): 'BUY' | 'SELL' | 'COMPOUND' {
     return this.tradingService.getTradeSide(trade);
   }
 
-  protected getTradeTags(trade: Trade): string[] {
+  protected getTradeTags(trade: ModelTrade): string[] {
     const model = this.models().find(m => m.id === trade.modelId);
     return this.tradingService.getTradeTags(trade, model);
   }
 
-  protected getTradeDisplaySymbol(trade: Trade): string {
+  protected getTradeDisplaySymbol(trade: ModelTrade): string {
     return this.tradingService.getTradeDisplaySymbol(trade);
   }
 
-  protected getPrimaryPosition(trade: Trade) {
-    return this.tradingService.getPrimaryPosition(trade);
+  protected getPrimaryPosition(trade: ModelTrade) {
+    return this.tradingService.getPrimaryTrade(trade);
   }
 
-  protected getTotalPositionValue(trade: Trade): number {
-    return trade.positions.reduce((sum, p) => sum + (p.currentPrice * p.quantity), 0);
+  protected getTotalPositionValue(trade: ModelTrade): number {
+    return trade.trades.reduce((sum, p) => sum + (p.currentPrice * p.quantity), 0);
   }
 
-  protected getTotalCostBasis(trade: Trade): number {
-    return trade.positions.reduce((sum, p) => sum + (p.entryPrice * p.quantity), 0);
+  protected getTotalCostBasis(trade: ModelTrade): number {
+    return trade.trades.reduce((sum, p) => sum + (p.entryPrice * p.quantity), 0);
   }
 
   // Filtered trades based on all filters
@@ -120,7 +120,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
       const term = this.searchTerm().toLowerCase();
       trades = trades.filter(t => {
         // Check all positions
-        return t.positions.some(p => 
+        return t.trades.some(p => 
           p.fromAsset.toLowerCase().includes(term) || 
           p.toAsset.toLowerCase().includes(term) ||
           `${p.fromAsset}/${p.toAsset}`.toLowerCase().includes(term)
@@ -147,7 +147,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
   
   protected allTradesForList = computed(() => this.paginatedTrades());
   
-  protected selectedTradeSignal = signal<Trade | null>(null);
+  protected selectedTradeSignal = signal<ModelTrade | null>(null);
   protected selectedTrade = computed(() => this.selectedTradeSignal());
 
   private isSyncingFromUrl = false;
@@ -226,7 +226,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  protected selectTrade(trade: Trade): void {
+  protected selectTrade(trade: ModelTrade): void {
     this.selectedTradeSignal.set(trade);
   }
 
@@ -234,7 +234,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
     this.selectedTradeSignal.set(null);
   }
 
-  protected isTradeSelected(trade: Trade): boolean {
+  protected isTradeSelected(trade: ModelTrade): boolean {
     return this.selectedTrade()?.id === trade.id;
   }
 
@@ -255,7 +255,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
     return model?.name || 'Unknown';
   }
 
-  protected isPaperTrading(trade: Trade): boolean {
+  protected isPaperTrading(trade: ModelTrade): boolean {
     const model = this.models().find(m => m.id === trade.modelId);
     return model?.paperTrading ?? false;
   }
