@@ -27,9 +27,12 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
   
   // Filter state
   protected filterStatus = signal<'ALL' | 'OPEN' | 'CLOSED'>('ALL');
-  protected filterSide = signal<'ALL' | 'BUY' | 'SELL' | 'COMPOUND'>('ALL');
+  protected filterTags = signal<string[]>([]);
   protected filterModel = signal<string>('ALL');
   protected searchTerm = signal<string>('');
+  
+  // Available tags
+  protected availableTags = ['BUY', 'SELL', 'COMPOUND', 'PAPER'];
   
   // Date filter state - default to past week
   private getDefaultStartDate(): Date {
@@ -54,9 +57,13 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
     this.allTrades().filter(t => t.status === 'CLOSED')
   );
   
-  // Helper methods for compound trades
-  protected isCompoundTrade(trade: Trade): boolean {
-    return this.tradingService.isCompoundTrade(trade);
+  protected getTradeSide(trade: Trade): 'BUY' | 'SELL' | 'COMPOUND' {
+    return this.tradingService.getTradeSide(trade);
+  }
+
+  protected getTradeTags(trade: Trade): string[] {
+    const model = this.models().find(m => m.id === trade.modelId);
+    return this.tradingService.getTradeTags(trade, model);
   }
 
   protected getTradeDisplaySymbol(trade: Trade): string {
@@ -95,17 +102,14 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
       trades = trades.filter(t => t.status === this.filterStatus());
     }
     
-    // Filter by side (check primary position or any position, or compound)
-    if (this.filterSide() !== 'ALL') {
-      if (this.filterSide() === 'COMPOUND') {
-        trades = trades.filter(t => this.isCompoundTrade(t));
-      } else {
-        trades = trades.filter(t => {
-          const primary = this.getPrimaryPosition(t);
-          return primary.side === this.filterSide() || 
-                 t.positions.some(p => p.side === this.filterSide());
-        });
-      }
+    // Filter by tags - if no tags selected, don't filter (show everything)
+    const selectedTags = this.filterTags();
+    if (selectedTags.length > 0) {
+      trades = trades.filter(t => {
+        const tradeTags = this.getTradeTags(t);
+        // AND logic: trade must have all of the selected tags
+        return selectedTags.every(tag => tradeTags.includes(tag));
+      });
     }
     
     // Filter by model
@@ -117,8 +121,6 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
     if (this.searchTerm().trim()) {
       const term = this.searchTerm().toLowerCase();
       trades = trades.filter(t => {
-        // Check legacy symbol field
-        if (t.symbol && t.symbol.toLowerCase().includes(term)) return true;
         // Check all positions
         return t.positions.some(p => 
           p.fromAsset.toLowerCase().includes(term) || 
@@ -159,7 +161,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
       if (this.isInitializing() || this.isSyncingFromUrl) return;
       
       const status = this.filterStatus();
-      const side = this.filterSide();
+      const tags = this.filterTags();
       const model = this.filterModel();
       const search = this.searchTerm();
       const startDate = this.startDate();
@@ -169,7 +171,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
       
       this.syncFiltersToUrl({
         status,
-        side,
+        tags,
         model,
         search,
         startDate,
@@ -255,6 +257,11 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
     return model?.name || 'Unknown';
   }
 
+  protected isPaperTrading(trade: Trade): boolean {
+    const model = this.models().find(m => m.id === trade.modelId);
+    return model?.paperTrading ?? false;
+  }
+
   protected formatCurrency(value: number): string {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -290,8 +297,18 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
     // URL will be updated by effect
   }
 
-  protected onFilterSideChange(side: 'ALL' | 'BUY' | 'SELL' | 'COMPOUND'): void {
-    this.filterSide.set(side);
+  protected addTag(tag: string): void {
+    const currentTags = this.filterTags();
+    if (!currentTags.includes(tag) && this.availableTags.includes(tag)) {
+      this.filterTags.set([...currentTags, tag]);
+      this.currentPage.set(1);
+      // URL will be updated by effect
+    }
+  }
+
+  protected removeTag(tag: string): void {
+    const currentTags = this.filterTags();
+    this.filterTags.set(currentTags.filter(t => t !== tag));
     this.currentPage.set(1);
     // URL will be updated by effect
   }
@@ -326,7 +343,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
 
   protected clearFilters(): void {
     this.filterStatus.set('ALL');
-    this.filterSide.set('ALL');
+    this.filterTags.set([]);
     this.filterModel.set('ALL');
     this.searchTerm.set('');
     this.startDate.set(this.getDefaultStartDate());
@@ -405,7 +422,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
   // URL State Management Methods
   private syncFiltersToUrl(params: {
     status?: string;
-    side?: string;
+    tags?: string[];
     model?: string;
     search?: string;
     startDate?: Date;
@@ -420,8 +437,8 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
     if (params.status && params.status !== 'ALL') {
       queryParams['status'] = params.status;
     }
-    if (params.side && params.side !== 'ALL') {
-      queryParams['side'] = params.side;
+    if (params.tags && params.tags.length > 0) {
+      queryParams['tags'] = params.tags.join(',');
     }
     if (params.model && params.model !== 'ALL') {
       queryParams['model'] = params.model;
@@ -481,7 +498,11 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
   private syncUrlToFilters(params: Params, isInitialLoad: boolean = false): void {
     // Set filter signals from URL params (use defaults if not in URL)
     this.filterStatus.set((params['status'] as 'ALL' | 'OPEN' | 'CLOSED') || 'ALL');
-    this.filterSide.set((params['side'] as 'ALL' | 'BUY' | 'SELL' | 'COMPOUND') || 'ALL');
+    if (params['tags']) {
+      this.filterTags.set((params['tags'] as string).split(',').filter(t => t));
+    } else {
+      this.filterTags.set([]);
+    }
     this.filterModel.set(params['model'] || 'ALL');
     this.searchTerm.set(params['search'] || '');
     
@@ -545,7 +566,7 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
   private buildQueryParams(): Params {
     return {
       status: this.filterStatus() !== 'ALL' ? this.filterStatus() : undefined,
-      side: this.filterSide() !== 'ALL' ? this.filterSide() : undefined,
+      tags: this.filterTags().length > 0 ? this.filterTags().join(',') : undefined,
       model: this.filterModel() !== 'ALL' ? this.filterModel() : undefined,
       search: this.searchTerm().trim() || undefined,
       startDate: (() => {

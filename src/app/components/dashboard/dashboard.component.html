@@ -149,13 +149,16 @@
                   {{ getTradeDisplaySymbol(trade) }}
                 </td>
                 <td>
-                  @if (isCompoundTrade(trade)) {
-                    <span class="side-badge compound">COMPOUND</span>
-                  } @else {
-                    <span class="side-badge" [class.buy]="getPrimaryPosition(trade).side === 'BUY'" 
-                          [class.sell]="getPrimaryPosition(trade).side === 'SELL'">
-                      {{ getPrimaryPosition(trade).side }}
-                    </span>
+                  @for (tag of getTradeTags(trade); track tag) {
+                    @if (tag === 'COMPOUND') {
+                      <span class="side-badge compound">COMPOUND</span>
+                    } @else if (tag === 'BUY' || tag === 'SELL') {
+                      <span class="side-badge" [class.buy]="tag === 'BUY'" [class.sell]="tag === 'SELL'">
+                        {{ tag }}
+                      </span>
+                    } @else if (tag === 'PAPER') {
+                      <span class="paper-badge">Paper</span>
+                    }
                   }
                 </td>
                 <td>{{ formatCurrency(getPrimaryPosition(trade).entryPrice) }}</td>
@@ -188,13 +191,16 @@
                 {{ getTradeDisplaySymbol(trade) }}
               </div>
               <div class="trade-card-badges">
-                @if (isCompoundTrade(trade)) {
-                  <span class="side-badge compound">COMPOUND</span>
-                } @else {
-                  <span class="side-badge" [class.buy]="getPrimaryPosition(trade).side === 'BUY'" 
-                        [class.sell]="getPrimaryPosition(trade).side === 'SELL'">
-                    {{ getPrimaryPosition(trade).side }}
-                  </span>
+                @for (tag of getTradeTags(trade); track tag) {
+                  @if (tag === 'COMPOUND') {
+                    <span class="side-badge compound">COMPOUND</span>
+                  } @else if (tag === 'BUY' || tag === 'SELL') {
+                    <span class="side-badge" [class.buy]="tag === 'BUY'" [class.sell]="tag === 'SELL'">
+                      {{ tag }}
+                    </span>
+                  } @else if (tag === 'PAPER') {
+                    <span class="paper-badge">Paper</span>
+                  }
                 }
                 <span class="status-badge" [class.open]="trade.status === 'OPEN'" 
                       [class.closed]="trade.status === 'CLOSED'">

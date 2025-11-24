@@ -163,12 +163,18 @@
 }
 
 .view-details {
-  color: var(--accent-color);
+  color: var(--accent-color-solid);
   font-weight: 600;
   font-size: 0.875rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.model-card:hover .view-details {
+  color: var(--blue-slate);
+  opacity: 1;
 }
 
 /* Detail View */
@@ -445,6 +451,18 @@
   background: var(--warning-bg);
   color: var(--warning-color);
   border: 1px solid var(--warning-border);
+}
+
+.paper-badge {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--text-secondary) 20%, transparent);
+  color: var(--text-secondary);
+  border: 1px solid color-mix(in srgb, var(--text-secondary) 50%, transparent);
+  margin-left: 0.375rem;
 }
 
 .positive {

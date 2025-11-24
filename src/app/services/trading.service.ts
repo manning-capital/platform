@@ -40,24 +40,12 @@ export class TradingService {
     return {
       id: trade.id,
       modelId: trade.modelId,
-      type: 'simple',
       positions: [position],
-      symbol: trade.symbol, // Keep for backward compatibility
-      side: trade.side,
-      quantity: trade.quantity,
-      entryPrice: trade.entryPrice,
-      currentPrice: trade.currentPrice,
-      exitPrice: trade.exitPrice,
       status: trade.status,
       timestamp: trade.timestamp,
       pnl: trade.pnl,
       pnlPercent: trade.pnlPercent
     };
-  }
-
-  // Helper methods for compound trades
-  isCompoundTrade(trade: Trade): boolean {
-    return trade.type === 'compound' || trade.positions.length > 1;
   }
 
   getPrimaryPosition(trade: Trade): Position {
@@ -67,8 +55,37 @@ export class TradingService {
     return trade.positions[0];
   }
 
+  getTradeSide(trade: Trade): 'BUY' | 'SELL' | 'COMPOUND' {
+    if (!trade.positions || trade.positions.length === 0) {
+      return 'COMPOUND';
+    }
+    
+    const firstSide = trade.positions[0].side;
+    const allSameSide = trade.positions.every(pos => pos.side === firstSide);
+    
+    if (allSameSide) {
+      return firstSide;
+    }
+    return 'COMPOUND';
+  }
+
+  getTradeTags(trade: Trade, model?: QuantModel): string[] {
+    const tags: string[] = [];
+    
+    // Add side tag (BUY, SELL, or COMPOUND)
+    const side = this.getTradeSide(trade);
+    tags.push(side);
+    
+    // Add paper tag if model is paper trading
+    if (model?.paperTrading) {
+      tags.push('PAPER');
+    }
+    
+    return tags;
+  }
+
   getTradeDisplaySymbol(trade: Trade): string {
-    if (this.isCompoundTrade(trade)) {
+    if (trade.positions.length > 1) {
       return trade.positions.map(p => `${p.fromAsset}/${p.toAsset}`).join(' + ');
     }
     const primary = this.getPrimaryPosition(trade);
@@ -117,7 +134,8 @@ export class TradingService {
         avgWin: 1245.80,
         avgLoss: -630.45,
         createdAt: new Date('2024-02-20'),
-        lastTradeAt: new Date()
+        lastTradeAt: new Date(),
+        paperTrading: true
       },
       {
         id: '3',
@@ -147,7 +165,8 @@ export class TradingService {
         avgWin: 320.50,
         avgLoss: -280.30,
         createdAt: new Date('2024-01-05'),
-        lastTradeAt: new Date()
+        lastTradeAt: new Date(),
+        paperTrading: true
       }
     ];
 
@@ -156,11 +175,17 @@ export class TradingService {
       {
         id: 't1',
         modelId: '1',
-        symbol: 'AAPL',
-        side: 'BUY',
-        quantity: 100,
-        entryPrice: 178.50,
-        currentPrice: 179.85,
+        positions: [{
+          id: 't1-p1',
+          fromAsset: 'USD',
+          toAsset: 'AAPL',
+          side: 'BUY',
+          quantity: 100,
+          entryPrice: 178.50,
+          currentPrice: 179.85,
+          pnl: 135.00,
+          pnlPercent: 0.76
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 3600000),
         pnl: 135.00,
@@ -169,11 +194,17 @@ export class TradingService {
       {
         id: 't2',
         modelId: '2',
-        symbol: 'TSLA',
-        side: 'BUY',
-        quantity: 50,
-        entryPrice: 242.30,
-        currentPrice: 245.75,
+        positions: [{
+          id: 't2-p1',
+          fromAsset: 'USD',
+          toAsset: 'TSLA',
+          side: 'BUY',
+          quantity: 50,
+          entryPrice: 242.30,
+          currentPrice: 245.75,
+          pnl: 172.50,
+          pnlPercent: 1.42
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 7200000),
         pnl: 172.50,
@@ -182,12 +213,18 @@ export class TradingService {
       {
         id: 't3',
         modelId: '1',
-        symbol: 'MSFT',
-        side: 'SELL',
-        quantity: 75,
-        entryPrice: 410.20,
-        currentPrice: 408.90,
-        exitPrice: 408.90,
+        positions: [{
+          id: 't3-p1',
+          fromAsset: 'USD',
+          toAsset: 'MSFT',
+          side: 'SELL',
+          quantity: 75,
+          entryPrice: 410.20,
+          currentPrice: 408.90,
+          exitPrice: 408.90,
+          pnl: 97.50,
+          pnlPercent: 0.32
+        }],
         status: 'CLOSED',
         timestamp: new Date(Date.now() - 14400000),
         pnl: 97.50,
@@ -196,11 +233,17 @@ export class TradingService {
       {
         id: 't4',
         modelId: '4',
-        symbol: 'NVDA',
-        side: 'BUY',
-        quantity: 30,
-        entryPrice: 495.80,
-        currentPrice: 492.15,
+        positions: [{
+          id: 't4-p1',
+          fromAsset: 'USD',
+          toAsset: 'NVDA',
+          side: 'BUY',
+          quantity: 30,
+          entryPrice: 495.80,
+          currentPrice: 492.15,
+          pnl: -109.50,
+          pnlPercent: -0.74
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 1800000),
         pnl: -109.50,
@@ -209,11 +252,17 @@ export class TradingService {
       {
         id: 't5',
         modelId: '2',
-        symbol: 'META',
-        side: 'BUY',
-        quantity: 60,
-        entryPrice: 485.40,
-        currentPrice: 487.90,
+        positions: [{
+          id: 't5-p1',
+          fromAsset: 'USD',
+          toAsset: 'META',
+          side: 'BUY',
+          quantity: 60,
+          entryPrice: 485.40,
+          currentPrice: 487.90,
+          pnl: 150.00,
+          pnlPercent: 0.52
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 900000),
         pnl: 150.00,
@@ -222,11 +271,17 @@ export class TradingService {
       {
         id: 't6',
         modelId: '4',
-        symbol: 'GOOGL',
-        side: 'SELL',
-        quantity: 80,
-        entryPrice: 139.75,
-        currentPrice: 140.20,
+        positions: [{
+          id: 't6-p1',
+          fromAsset: 'USD',
+          toAsset: 'GOOGL',
+          side: 'SELL',
+          quantity: 80,
+          entryPrice: 139.75,
+          currentPrice: 140.20,
+          pnl: -36.00,
+          pnlPercent: -0.32
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 600000),
         pnl: -36.00,
@@ -235,11 +290,17 @@ export class TradingService {
       {
         id: 't7',
         modelId: '1',
-        symbol: 'AMZN',
-        side: 'BUY',
-        quantity: 45,
-        entryPrice: 178.25,
-        currentPrice: 180.50,
+        positions: [{
+          id: 't7-p1',
+          fromAsset: 'USD',
+          toAsset: 'AMZN',
+          side: 'BUY',
+          quantity: 45,
+          entryPrice: 178.25,
+          currentPrice: 180.50,
+          pnl: 101.25,
+          pnlPercent: 1.26
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 5400000),
         pnl: 101.25,
@@ -248,12 +309,18 @@ export class TradingService {
       {
         id: 't8',
         modelId: '2',
-        symbol: 'AMD',
-        side: 'BUY',
-        quantity: 120,
-        entryPrice: 158.90,
-        currentPrice: 157.20,
-        exitPrice: 157.20,
+        positions: [{
+          id: 't8-p1',
+          fromAsset: 'USD',
+          toAsset: 'AMD',
+          side: 'BUY',
+          quantity: 120,
+          entryPrice: 158.90,
+          currentPrice: 157.20,
+          exitPrice: 157.20,
+          pnl: -204.00,
+          pnlPercent: -1.07
+        }],
         status: 'CLOSED',
         timestamp: new Date(Date.now() - 18000000),
         pnl: -204.00,
@@ -262,11 +329,17 @@ export class TradingService {
       {
         id: 't9',
         modelId: '4',
-        symbol: 'NFLX',
-        side: 'BUY',
-        quantity: 25,
-        entryPrice: 612.40,
-        currentPrice: 615.80,
+        positions: [{
+          id: 't9-p1',
+          fromAsset: 'USD',
+          toAsset: 'NFLX',
+          side: 'BUY',
+          quantity: 25,
+          entryPrice: 612.40,
+          currentPrice: 615.80,
+          pnl: 85.00,
+          pnlPercent: 0.56
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 2700000),
         pnl: 85.00,
@@ -275,11 +348,17 @@ export class TradingService {
       {
         id: 't10',
         modelId: '1',
-        symbol: 'INTC',
-        side: 'SELL',
-        quantity: 200,
-        entryPrice: 42.15,
-        currentPrice: 41.80,
+        positions: [{
+          id: 't10-p1',
+          fromAsset: 'USD',
+          toAsset: 'INTC',
+          side: 'SELL',
+          quantity: 200,
+          entryPrice: 42.15,
+          currentPrice: 41.80,
+          pnl: 70.00,
+          pnlPercent: 0.83
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 4500000),
         pnl: 70.00,
@@ -288,11 +367,17 @@ export class TradingService {
       {
         id: 't11',
         modelId: '2',
-        symbol: 'BABA',
-        side: 'BUY',
-        quantity: 85,
-        entryPrice: 88.50,
-        currentPrice: 90.25,
+        positions: [{
+          id: 't11-p1',
+          fromAsset: 'USD',
+          toAsset: 'BABA',
+          side: 'BUY',
+          quantity: 85,
+          entryPrice: 88.50,
+          currentPrice: 90.25,
+          pnl: 148.75,
+          pnlPercent: 1.98
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 3300000),
         pnl: 148.75,
@@ -301,12 +386,18 @@ export class TradingService {
       {
         id: 't12',
         modelId: '4',
-        symbol: 'DIS',
-        side: 'BUY',
-        quantity: 110,
-        entryPrice: 95.30,
-        currentPrice: 94.85,
-        exitPrice: 94.85,
+        positions: [{
+          id: 't12-p1',
+          fromAsset: 'USD',
+          toAsset: 'DIS',
+          side: 'BUY',
+          quantity: 110,
+          entryPrice: 95.30,
+          currentPrice: 94.85,
+          exitPrice: 94.85,
+          pnl: -49.50,
+          pnlPercent: -0.47
+        }],
         status: 'CLOSED',
         timestamp: new Date(Date.now() - 21600000),
         pnl: -49.50,
@@ -315,11 +406,17 @@ export class TradingService {
       {
         id: 't13',
         modelId: '1',
-        symbol: 'PYPL',
-        side: 'BUY',
-        quantity: 90,
-        entryPrice: 62.80,
-        currentPrice: 64.20,
+        positions: [{
+          id: 't13-p1',
+          fromAsset: 'USD',
+          toAsset: 'PYPL',
+          side: 'BUY',
+          quantity: 90,
+          entryPrice: 62.80,
+          currentPrice: 64.20,
+          pnl: 126.00,
+          pnlPercent: 2.23
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 7800000),
         pnl: 126.00,
@@ -328,11 +425,17 @@ export class TradingService {
       {
         id: 't14',
         modelId: '2',
-        symbol: 'SHOP',
-        side: 'BUY',
-        quantity: 55,
-        entryPrice: 78.90,
-        currentPrice: 77.50,
+        positions: [{
+          id: 't14-p1',
+          fromAsset: 'USD',
+          toAsset: 'SHOP',
+          side: 'BUY',
+          quantity: 55,
+          entryPrice: 78.90,
+          currentPrice: 77.50,
+          pnl: -77.00,
+          pnlPercent: -1.77
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 1200000),
         pnl: -77.00,
@@ -341,11 +444,17 @@ export class TradingService {
       {
         id: 't15',
         modelId: '4',
-        symbol: 'SQ',
-        side: 'SELL',
-        quantity: 140,
-        entryPrice: 74.20,
-        currentPrice: 73.85,
+        positions: [{
+          id: 't15-p1',
+          fromAsset: 'USD',
+          toAsset: 'SQ',
+          side: 'SELL',
+          quantity: 140,
+          entryPrice: 74.20,
+          currentPrice: 73.85,
+          pnl: 49.00,
+          pnlPercent: 0.47
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 6600000),
         pnl: 49.00,
@@ -354,11 +463,17 @@ export class TradingService {
       {
         id: 't16',
         modelId: '1',
-        symbol: 'UBER',
-        side: 'BUY',
-        quantity: 170,
-        entryPrice: 72.50,
-        currentPrice: 73.95,
+        positions: [{
+          id: 't16-p1',
+          fromAsset: 'USD',
+          toAsset: 'UBER',
+          side: 'BUY',
+          quantity: 170,
+          entryPrice: 72.50,
+          currentPrice: 73.95,
+          pnl: 246.50,
+          pnlPercent: 2.00
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 10800000),
         pnl: 246.50,
@@ -367,12 +482,18 @@ export class TradingService {
       {
         id: 't17',
         modelId: '2',
-        symbol: 'COIN',
-        side: 'BUY',
-        quantity: 40,
-        entryPrice: 245.80,
-        currentPrice: 248.30,
-        exitPrice: 248.30,
+        positions: [{
+          id: 't17-p1',
+          fromAsset: 'USD',
+          toAsset: 'COIN',
+          side: 'BUY',
+          quantity: 40,
+          entryPrice: 245.80,
+          currentPrice: 248.30,
+          exitPrice: 248.30,
+          pnl: 100.00,
+          pnlPercent: 1.02
+        }],
         status: 'CLOSED',
         timestamp: new Date(Date.now() - 25200000),
         pnl: 100.00,
@@ -381,11 +502,17 @@ export class TradingService {
       {
         id: 't18',
         modelId: '4',
-        symbol: 'SNOW',
-        side: 'BUY',
-        quantity: 65,
-        entryPrice: 178.40,
-        currentPrice: 175.90,
+        positions: [{
+          id: 't18-p1',
+          fromAsset: 'USD',
+          toAsset: 'SNOW',
+          side: 'BUY',
+          quantity: 65,
+          entryPrice: 178.40,
+          currentPrice: 175.90,
+          pnl: -162.50,
+          pnlPercent: -1.40
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 9000000),
         pnl: -162.50,
@@ -394,11 +521,17 @@ export class TradingService {
       {
         id: 't19',
         modelId: '1',
-        symbol: 'PLTR',
-        side: 'BUY',
-        quantity: 250,
-        entryPrice: 25.60,
-        currentPrice: 26.15,
+        positions: [{
+          id: 't19-p1',
+          fromAsset: 'USD',
+          toAsset: 'PLTR',
+          side: 'BUY',
+          quantity: 250,
+          entryPrice: 25.60,
+          currentPrice: 26.15,
+          pnl: 137.50,
+          pnlPercent: 2.15
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 12600000),
         pnl: 137.50,
@@ -407,11 +540,17 @@ export class TradingService {
       {
         id: 't20',
         modelId: '2',
-        symbol: 'ROKU',
-        side: 'SELL',
-        quantity: 95,
-        entryPrice: 68.90,
-        currentPrice: 69.40,
+        positions: [{
+          id: 't20-p1',
+          fromAsset: 'USD',
+          toAsset: 'ROKU',
+          side: 'SELL',
+          quantity: 95,
+          entryPrice: 68.90,
+          currentPrice: 69.40,
+          pnl: -47.50,
+          pnlPercent: -0.73
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 4800000),
         pnl: -47.50,
@@ -420,12 +559,18 @@ export class TradingService {
       {
         id: 't21',
         modelId: '4',
-        symbol: 'ZM',
-        side: 'BUY',
-        quantity: 75,
-        entryPrice: 68.25,
-        currentPrice: 69.80,
-        exitPrice: 69.80,
+        positions: [{
+          id: 't21-p1',
+          fromAsset: 'USD',
+          toAsset: 'ZM',
+          side: 'BUY',
+          quantity: 75,
+          entryPrice: 68.25,
+          currentPrice: 69.80,
+          exitPrice: 69.80,
+          pnl: 116.25,
+          pnlPercent: 2.27
+        }],
         status: 'CLOSED',
         timestamp: new Date(Date.now() - 28800000),
         pnl: 116.25,
@@ -434,11 +579,17 @@ export class TradingService {
       {
         id: 't22',
         modelId: '1',
-        symbol: 'SNAP',
-        side: 'BUY',
-        quantity: 310,
-        entryPrice: 11.85,
-        currentPrice: 12.20,
+        positions: [{
+          id: 't22-p1',
+          fromAsset: 'USD',
+          toAsset: 'SNAP',
+          side: 'BUY',
+          quantity: 310,
+          entryPrice: 11.85,
+          currentPrice: 12.20,
+          pnl: 108.50,
+          pnlPercent: 2.95
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 15300000),
         pnl: 108.50,
@@ -447,11 +598,17 @@ export class TradingService {
       {
         id: 't23',
         modelId: '2',
-        symbol: 'SPOT',
-        side: 'BUY',
-        quantity: 35,
-        entryPrice: 312.40,
-        currentPrice: 315.80,
+        positions: [{
+          id: 't23-p1',
+          fromAsset: 'USD',
+          toAsset: 'SPOT',
+          side: 'BUY',
+          quantity: 35,
+          entryPrice: 312.40,
+          currentPrice: 315.80,
+          pnl: 119.00,
+          pnlPercent: 1.09
+        }],
         status: 'OPEN',
         timestamp: new Date(Date.now() - 16200000),
         pnl: 119.00,
@@ -461,7 +618,6 @@ export class TradingService {
       {
         id: 't-compound-1',
         modelId: '1',
-        type: 'compound',
         positions: [
           {
             id: 'p1',
@@ -494,7 +650,6 @@ export class TradingService {
       {
         id: 't-compound-2',
         modelId: '2',
-        type: 'compound',
         positions: [
           {
             id: 'p3',
@@ -527,7 +682,6 @@ export class TradingService {
       {
         id: 't-compound-3',
         modelId: '1',
-        type: 'compound',
         positions: [
           {
             id: 'p5',
@@ -562,7 +716,6 @@ export class TradingService {
       {
         id: 't-compound-4',
         modelId: '3',
-        type: 'compound',
         positions: [
           {
             id: 'p7',
@@ -606,7 +759,6 @@ export class TradingService {
       {
         id: 't-compound-5',
         modelId: '4',
-        type: 'compound',
         positions: [
           {
             id: 'p10',
@@ -639,7 +791,6 @@ export class TradingService {
       {
         id: 't-compound-6',
         modelId: '1',
-        type: 'compound',
         positions: [
           {
             id: 'p12',
@@ -686,7 +837,6 @@ export class TradingService {
       {
         id: 't-compound-7',
         modelId: '2',
-        type: 'compound',
         positions: [
           {
             id: 'p15',
@@ -719,7 +869,6 @@ export class TradingService {
       {
         id: 't-compound-8',
         modelId: '3',
-        type: 'compound',
         positions: [
           {
             id: 'p17',
@@ -754,7 +903,6 @@ export class TradingService {
       {
         id: 't-compound-9',
         modelId: '4',
-        type: 'compound',
         positions: [
           {
             id: 'p19',
@@ -798,7 +946,6 @@ export class TradingService {
       {
         id: 't-compound-10',
         modelId: '1',
-        type: 'compound',
         positions: [
           {
             id: 'p22',

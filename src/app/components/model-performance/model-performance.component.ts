@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { TradingService } from '../../services/trading.service';
 import { Subject, takeUntil } from 'rxjs';
+import { Trade } from '../../models/trade.model';
 
 @Component({
   selector: 'app-model-performance',
@@ -103,15 +104,20 @@ export class ModelPerformanceComponent implements OnInit, OnDestroy {
     return winAmount / lossAmount;
   }
 
-  protected isCompoundTrade(trade: any): boolean {
-    return this.tradingService.isCompoundTrade(trade);
+  protected getTradeSide(trade: Trade): 'BUY' | 'SELL' | 'COMPOUND' {
+    return this.tradingService.getTradeSide(trade);
   }
 
-  protected getTradeDisplaySymbol(trade: any): string {
+  protected getTradeTags(trade: Trade): string[] {
+    const model = this.models().find(m => m.id === trade.modelId);
+    return this.tradingService.getTradeTags(trade, model);
+  }
+
+  protected getTradeDisplaySymbol(trade: Trade): string {
     return this.tradingService.getTradeDisplaySymbol(trade);
   }
 
-  protected getPrimaryPosition(trade: any) {
+  protected getPrimaryPosition(trade: Trade) {
     return this.tradingService.getPrimaryPosition(trade);
   }
 

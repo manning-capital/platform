@@ -48,19 +48,6 @@
       </div>
 
       <div class="filter-group">
-        <label class="filter-label">Side</label>
-        <select 
-          class="filter-select"
-          [value]="filterSide()"
-          (change)="onFilterSideChange($any($event.target).value)">
-          <option value="ALL">All</option>
-          <option value="BUY">Buy</option>
-          <option value="SELL">Sell</option>
-          <option value="COMPOUND">Compound</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
         <label class="filter-label">Model</label>
         <select 
           class="filter-select"
@@ -69,6 +56,40 @@
           <option value="ALL">All Models</option>
           @for (model of models(); track model.id) {
             <option [value]="model.id">{{ model.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Tags</label>
+        <div class="tags-filter-list">
+          @if (filterTags().length === 0) {
+            <div class="tags-empty-state">All tags (default)</div>
+          } @else {
+            @for (tag of filterTags(); track tag) {
+              <span class="tag-chip">
+                {{ tag }}
+                <button 
+                  type="button"
+                  class="tag-remove-btn"
+                  (click)="removeTag(tag); $event.stopPropagation()">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                  </svg>
+                </button>
+              </span>
+            }
+          }
+        </div>
+        <select 
+          class="tag-add-select"
+          [value]="''"
+          (change)="addTag($any($event.target).value); $any($event.target).value = ''">
+          <option value="">Add tag...</option>
+          @for (tag of availableTags; track tag) {
+            @if (!filterTags().includes(tag)) {
+              <option [value]="tag">{{ tag }}</option>
+            }
           }
         </select>
       </div>
@@ -102,14 +123,19 @@
               <div class="trade-symbol">
                 {{ getTradeDisplaySymbol(trade) }}
               </div>
-              @if (isCompoundTrade(trade)) {
-                <span class="side-badge small compound">COMPOUND</span>
-              } @else {
-                <span class="side-badge small" [class.buy]="getPrimaryPosition(trade).side === 'BUY'" 
-                      [class.sell]="getPrimaryPosition(trade).side === 'SELL'">
-                  {{ getPrimaryPosition(trade).side }}
-                </span>
+              <div class="badge-group">
+              @for (tag of getTradeTags(trade); track tag) {
+                @if (tag === 'COMPOUND') {
+                  <span class="side-badge small compound">COMPOUND</span>
+                } @else if (tag === 'BUY' || tag === 'SELL') {
+                  <span class="side-badge small" [class.buy]="tag === 'BUY'" [class.sell]="tag === 'SELL'">
+                    {{ tag }}
+                  </span>
+                } @else if (tag === 'PAPER') {
+                  <span class="paper-badge small">Paper</span>
+                }
               }
+              </div>
             </div>
             <div class="trade-list-item-body">
               <div class="trade-model-name">{{ getModelName(trade.modelId) }}</div>
@@ -187,14 +213,19 @@
             <h2 class="detail-symbol">
               {{ getTradeDisplaySymbol(trade) }}
             </h2>
-            @if (isCompoundTrade(trade)) {
-              <span class="side-badge large compound">COMPOUND</span>
-            } @else {
-              <span class="side-badge large" [class.buy]="getPrimaryPosition(trade).side === 'BUY'" 
-                    [class.sell]="getPrimaryPosition(trade).side === 'SELL'">
-                {{ getPrimaryPosition(trade).side }}
-              </span>
-            }
+            <div class="badge-group">
+              @for (tag of getTradeTags(trade); track tag) {
+                @if (tag === 'COMPOUND') {
+                  <span class="side-badge large compound">COMPOUND</span>
+                } @else if (tag === 'BUY' || tag === 'SELL') {
+                  <span class="side-badge large" [class.buy]="tag === 'BUY'" [class.sell]="tag === 'SELL'">
+                    {{ tag }}
+                  </span>
+                } @else if (tag === 'PAPER') {
+                  <span class="paper-badge large">Paper</span>
+                }
+              }
+            </div>
             @if (trade.status === 'OPEN') {
               <span class="live-badge">LIVE</span>
             } @else {
@@ -210,9 +241,8 @@
         </div>
 
         <div class="detail-sections">
-          <!-- Positions Section (for compound trades) -->
-          @if (isCompoundTrade(trade)) {
-            <section class="detail-section positions-section">
+          <!-- Positions Section -->
+          <section class="detail-section positions-section">
               <h3 class="section-title">Positions</h3>
               
               <!-- Desktop Table View -->
@@ -302,7 +332,6 @@
                 }
               </div>
             </section>
-          }
 
           <!-- Metrics and Conditions (Priority Section) -->
           <section class="detail-section metrics-section">
@@ -353,27 +382,13 @@
               </div>
               <div class="metric-card">
                 <div class="metric-card-label">Position Value</div>
-                @if (isCompoundTrade(trade)) {
-                  <div class="metric-card-value">{{ formatCurrency(getTotalPositionValue(trade)) }}</div>
-                  <div class="metric-card-subtitle">{{ trade.positions.length }} position(s)</div>
-                } @else {
-                  @if (getPrimaryPosition(trade); as pos) {
-                    <div class="metric-card-value">{{ formatCurrency(pos.currentPrice * pos.quantity) }}</div>
-                    <div class="metric-card-subtitle">{{ pos.quantity }} shares</div>
-                  }
-                }
+                <div class="metric-card-value">{{ formatCurrency(getTotalPositionValue(trade)) }}</div>
+                <div class="metric-card-subtitle">{{ trade.positions.length }} position(s)</div>
               </div>
               <div class="metric-card">
                 <div class="metric-card-label">Cost Basis</div>
-                @if (isCompoundTrade(trade)) {
-                  <div class="metric-card-value">{{ formatCurrency(getTotalCostBasis(trade)) }}</div>
-                  <div class="metric-card-subtitle">Initial investment</div>
-                } @else {
-                  @if (getPrimaryPosition(trade); as pos) {
-                    <div class="metric-card-value">{{ formatCurrency(pos.entryPrice * pos.quantity) }}</div>
-                    <div class="metric-card-subtitle">Initial investment</div>
-                  }
-                }
+                <div class="metric-card-value">{{ formatCurrency(getTotalCostBasis(trade)) }}</div>
+                <div class="metric-card-subtitle">Initial investment</div>
               </div>
             </div>
           </section>
@@ -390,19 +405,10 @@
                 <span class="detail-label">Status</span>
                 <span class="detail-value">{{ trade.status }}</span>
               </div>
-              @if (!isCompoundTrade(trade)) {
-                @if (getPrimaryPosition(trade); as pos) {
-                  <div class="detail-item">
-                    <span class="detail-label">Quantity</span>
-                    <span class="detail-value">{{ pos.quantity }}</span>
-                  </div>
-                }
-              } @else {
-                <div class="detail-item">
-                  <span class="detail-label">Positions</span>
-                  <span class="detail-value">{{ trade.positions.length }}</span>
-                </div>
-              }
+              <div class="detail-item">
+                <span class="detail-label">Positions</span>
+                <span class="detail-value">{{ trade.positions.length }}</span>
+              </div>
               <div class="detail-item">
                 <span class="detail-label">Entry Time</span>
                 <span class="detail-value">{{ formatDate(trade.timestamp) }}</span>
@@ -411,7 +417,7 @@
           </section>
 
           <!-- Price Information -->
-          @if (!isCompoundTrade(trade)) {
+          @if (trade.positions.length === 1) {
             <section class="detail-section">
               <h3 class="section-title">Price Information</h3>
               @if (getPrimaryPosition(trade); as pos) {

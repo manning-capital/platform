@@ -14,15 +14,7 @@ export interface Position {
 export interface Trade {
   id: string;
   modelId: string;
-  type: 'simple' | 'compound';
   positions: Position[];
-  // Legacy fields for backward compatibility (deprecated)
-  symbol?: string;
-  side?: 'BUY' | 'SELL';
-  quantity?: number;
-  entryPrice?: number;
-  currentPrice?: number;
-  exitPrice?: number;
   status: 'OPEN' | 'CLOSED' | 'PENDING';
   timestamp: Date;
   pnl: number;
@@ -84,6 +76,7 @@ export interface QuantModel {
   avgLoss: number;
   createdAt: Date;
   lastTradeAt?: Date;
+  paperTrading?: boolean;
 }
 
 export interface DashboardStats {

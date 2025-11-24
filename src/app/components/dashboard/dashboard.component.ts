@@ -2,6 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TradingService } from '../../services/trading.service';
+import { Trade } from '../../models/trade.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,15 +22,20 @@ export class DashboardComponent {
     );
   });
 
-  protected isCompoundTrade(trade: any): boolean {
-    return this.tradingService.isCompoundTrade(trade);
+  protected getTradeSide(trade: Trade): 'BUY' | 'SELL' | 'COMPOUND' {
+    return this.tradingService.getTradeSide(trade);
   }
 
-  protected getTradeDisplaySymbol(trade: any): string {
+  protected getTradeTags(trade: Trade): string[] {
+    const model = this.models().find(m => m.id === trade.modelId);
+    return this.tradingService.getTradeTags(trade, model);
+  }
+
+  protected getTradeDisplaySymbol(trade: Trade): string {
     return this.tradingService.getTradeDisplaySymbol(trade);
   }
 
-  protected getPrimaryPosition(trade: any) {
+  protected getPrimaryPosition(trade: Trade) {
     return this.tradingService.getPrimaryPosition(trade);
   }
 
@@ -57,6 +63,11 @@ export class DashboardComponent {
     if (hours > 0) return `${hours}h ago`;
     if (minutes > 0) return `${minutes}m ago`;
     return 'Just now';
+  }
+
+  protected isPaperTrading(trade: Trade): boolean {
+    const model = this.models().find(m => m.id === trade.modelId);
+    return model?.paperTrading ?? false;
   }
 }
 
