@@ -170,6 +170,7 @@
               View All Trades →
             </a>
           </div>
+          <!-- Desktop Table View -->
           <div class="trades-table-container">
             <table class="trades-table">
               <thead>
@@ -229,6 +230,66 @@
                 }
               </tbody>
             </table>
+          </div>
+
+          <!-- Mobile Card View -->
+          <div class="trades-cards-container">
+            @for (trade of modelTrades(); track trade.id) {
+              <div class="trade-card">
+                <div class="trade-card-header">
+                  <div class="trade-card-symbol">
+                    {{ getTradeDisplaySymbol(trade) }}
+                  </div>
+                  <div class="trade-card-badges">
+                    @if (isCompoundTrade(trade)) {
+                      <span class="side-badge compound">COMPOUND</span>
+                    } @else {
+                      <span class="side-badge" [class.buy]="getPrimaryPosition(trade).side === 'BUY'" 
+                            [class.sell]="getPrimaryPosition(trade).side === 'SELL'">
+                        {{ getPrimaryPosition(trade).side }}
+                      </span>
+                    }
+                    <span class="status-badge" [class.open]="trade.status === 'OPEN'" 
+                          [class.closed]="trade.status === 'CLOSED'">
+                      {{ trade.status }}
+                    </span>
+                  </div>
+                </div>
+                <div class="trade-card-body">
+                  <div class="trade-card-row">
+                    <span class="trade-card-label">Quantity:</span>
+                    <span class="trade-card-value">
+                      @if (isCompoundTrade(trade)) {
+                        {{ trade.positions.length }} positions
+                      } @else {
+                        {{ getPrimaryPosition(trade).quantity }}
+                      }
+                    </span>
+                  </div>
+                  <div class="trade-card-row">
+                    <span class="trade-card-label">Entry Price:</span>
+                    <span class="trade-card-value">{{ formatCurrency(getPrimaryPosition(trade).entryPrice) }}</span>
+                  </div>
+                  <div class="trade-card-row">
+                    <span class="trade-card-label">Current Price:</span>
+                    <span class="trade-card-value">{{ formatCurrency(getPrimaryPosition(trade).currentPrice) }}</span>
+                  </div>
+                </div>
+                <div class="trade-card-footer">
+                  <div class="trade-card-pnl">
+                    <span class="trade-card-label">P&L:</span>
+                    <span class="trade-card-value" [class.positive]="trade.pnl >= 0" [class.negative]="trade.pnl < 0">
+                      {{ formatCurrency(trade.pnl) }}
+                    </span>
+                  </div>
+                  <div class="trade-card-pnl-percent" [class.positive]="trade.pnlPercent >= 0" [class.negative]="trade.pnlPercent < 0">
+                    {{ formatPercent(trade.pnlPercent) }}
+                  </div>
+                </div>
+              </div>
+            } @empty {
+              <div class="no-trades-card">No trades for this model</div>
+            }
           </div>
           
           <!-- Pagination Controls -->

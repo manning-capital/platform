@@ -127,6 +127,7 @@
         <a routerLink="/live-trades" class="view-all">View All →</a>
       </div>
 
+      <!-- Desktop Table View -->
       <div class="trades-table">
         <table>
           <thead>
@@ -176,6 +177,53 @@
             }
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Card View -->
+      <div class="trades-cards-container">
+        @for (trade of recentTrades(); track trade.id) {
+          <div class="trade-card">
+            <div class="trade-card-header">
+              <div class="trade-card-symbol">
+                {{ getTradeDisplaySymbol(trade) }}
+              </div>
+              <div class="trade-card-badges">
+                @if (isCompoundTrade(trade)) {
+                  <span class="side-badge compound">COMPOUND</span>
+                } @else {
+                  <span class="side-badge" [class.buy]="getPrimaryPosition(trade).side === 'BUY'" 
+                        [class.sell]="getPrimaryPosition(trade).side === 'SELL'">
+                    {{ getPrimaryPosition(trade).side }}
+                  </span>
+                }
+                <span class="status-badge" [class.open]="trade.status === 'OPEN'" 
+                      [class.closed]="trade.status === 'CLOSED'">
+                  {{ trade.status }}
+                </span>
+              </div>
+            </div>
+            <div class="trade-card-body">
+              <div class="trade-card-row">
+                <span class="trade-card-label">Time:</span>
+                <span class="trade-card-value">{{ formatTime(trade.timestamp) }}</span>
+              </div>
+              <div class="trade-card-row">
+                <span class="trade-card-label">Entry:</span>
+                <span class="trade-card-value">{{ formatCurrency(getPrimaryPosition(trade).entryPrice) }}</span>
+              </div>
+              <div class="trade-card-row">
+                <span class="trade-card-label">Current:</span>
+                <span class="trade-card-value">{{ formatCurrency(getPrimaryPosition(trade).currentPrice) }}</span>
+              </div>
+            </div>
+            <div class="trade-card-footer">
+              <div class="trade-card-pnl" [class.positive]="trade.pnl >= 0" [class.negative]="trade.pnl < 0">
+                <div class="pnl-amount">{{ formatCurrency(trade.pnl) }}</div>
+                <div class="pnl-percent">{{ formatPercent(trade.pnlPercent) }}</div>
+              </div>
+            </div>
+          </div>
+        }
       </div>
     </section>
   </div>

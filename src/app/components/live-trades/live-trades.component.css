@@ -347,6 +347,10 @@
   padding: 2rem;
 }
 
+.mobile-back-btn {
+  display: none;
+}
+
 .trade-detail-empty {
   display: flex;
   align-items: center;
@@ -646,16 +650,67 @@
 
   .master-detail-container {
     grid-template-columns: 1fr;
+    position: relative;
   }
 
   .trade-list {
     border-right: none;
-    border-bottom: 1px solid var(--border-color);
-    max-height: 40vh;
+    border-bottom: none;
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Hide list when detail is shown on mobile */
+  .trade-list.hidden-mobile {
+    display: none;
+  }
+
+  /* Hide empty detail on mobile */
+  .trade-detail.hidden-mobile {
+    display: none;
+  }
+
+  /* Show detail when trade is selected on mobile */
+  .trade-detail.visible-mobile {
+    display: block;
+    height: 100%;
+    overflow-y: auto;
   }
 
   .trade-detail {
     padding: 1rem;
+    height: 100%;
+    overflow-y: auto;
+    display: none;
+  }
+
+  .mobile-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    background: var(--hover-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+  }
+
+  .mobile-back-btn:hover {
+    background: var(--card-bg);
+  }
+
+  .mobile-back-btn svg {
+    width: 20px;
+    height: 20px;
   }
 
   .detail-symbol {

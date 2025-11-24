@@ -229,6 +229,10 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
     this.selectedTradeSignal.set(trade);
   }
 
+  protected goBackToList(): void {
+    this.selectedTradeSignal.set(null);
+  }
+
   protected isTradeSelected(trade: Trade): boolean {
     return this.selectedTrade()?.id === trade.id;
   }
