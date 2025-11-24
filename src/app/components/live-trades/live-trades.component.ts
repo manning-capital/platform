@@ -86,15 +86,13 @@ export class LiveTradesComponent implements OnInit, OnDestroy {
   protected filteredTrades = computed(() => {
     let trades = this.allTrades();
     
-    // Filter by date range OR open status
-    // Always show open positions regardless of date
+    // Filter by date range
     const start = this.startDate();
     const end = new Date(this.endDate());
     end.setHours(23, 59, 59, 999); // Include entire end date
     
     trades = trades.filter(t => 
-      t.status === 'OPEN' || // Always include open positions
-      (t.timestamp >= start && t.timestamp <= end) // Or within date range
+      t.timestamp >= start && t.timestamp <= end
     );
     
     // Filter by status
