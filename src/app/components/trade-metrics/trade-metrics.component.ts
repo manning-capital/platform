@@ -12,9 +12,15 @@ import { TradeChartComponent } from '../trade-chart/trade-chart.component';
 export class TradeMetricsComponent {
   @Input() set metrics(data: TradeMetrics | null) {
     this.metricsSignal.set(data);
-    // Reset to first tab when metrics change
+    // Preserve current selection, only reset if current selection is no longer valid
     if (data && data.availableMetrics.length > 0) {
-      this.selectedMetricId.set(data.availableMetrics[0].id);
+      const currentSelection = this.selectedMetricId();
+      const isValidSelection = data.availableMetrics.some(m => m.id === currentSelection);
+      if (!isValidSelection) {
+        // Only reset to first if current selection doesn't exist in new data
+        this.selectedMetricId.set(data.availableMetrics[0].id);
+      }
+      // Otherwise, keep the current selection
     }
   }
 
