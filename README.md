@@ -1,27 +1,51 @@
-# Quant Trading Platform
+# Manning Capital Trading Platform
 
-A modern Angular 21 application for tracking quantitative model performance and monitoring live trades.
+A modern Angular 21 application for real-time quantitative trading model performance monitoring and live trade tracking.
+
+## Overview
+
+The Manning Capital Trading Platform provides comprehensive tools for monitoring quantitative trading models, analyzing trade performance, and tracking live positions. The platform features a clean, responsive interface with advanced filtering, detailed analytics, and support for both simple and compound trades.
 
 ## Features
 
-- 📊 **Dashboard**: Overview of trading performance and key metrics
-- 📈 **Model Performance**: Detailed analytics for each quantitative model
-- 💹 **Live Trades Monitor**: Real-time trade tracking with filtering and pagination
-- 🎨 **Dual Themes**: Light and dark mode with Forest Reverie color palette
-- 📱 **Responsive Design**: Works on desktop, tablet, and mobile
-- 📉 **Custom Charts**: SVG-based charts for trade metrics and signals
+### Core Functionality
+
+- **📊 Dashboard**: Real-time overview of trading performance, active models, and recent trades
+- **📈 Model Performance**: Detailed analytics for each quantitative model with metrics, trade history, and pagination
+- **💹 Live Trades Monitor**: Real-time trade tracking with advanced filtering, pagination, and master-detail view
+- **🔄 Compound Trades**: Support for multi-position trades (e.g., pairs trading strategies)
+- **📉 Custom Charts**: SVG-based charts for trade metrics, signals, and time series data
+- **📋 Trade Metrics**: Comprehensive metrics including strategy exit conditions, model parameters, and performance indicators
+
+### User Experience
+
+- **🎨 Dual Themes**: Light and dark mode with custom color palette
+- **📱 Responsive Design**: Fully optimized for desktop, tablet, and mobile devices
+- **🔍 Advanced Filtering**: Filter trades by status, side, model, symbol, and date range
+- **🔗 URL State Management**: Bookmarkable URLs with query parameters for filters and selected items
+- **⚡ Real-time Updates**: Live price updates and trade status changes
+- **📄 Pagination**: Efficient pagination for large trade lists
+
+### Additional Pages
+
+- **ℹ️ About Page**: Introduction and contact information with links to GitHub and LinkedIn
 
 ## Tech Stack
 
 - **Framework**: Angular 21 (Standalone Components)
 - **State Management**: Angular Signals
-- **Routing**: Angular Router
-- **Styling**: CSS with CSS Variables
+- **Routing**: Angular Router with route parameters
+- **Styling**: CSS with CSS Variables for theming
 - **Charts**: Custom SVG implementation
 - **Build**: Angular CLI
-- **Deployment**: Docker + Kubernetes
+- **Deployment**: Docker with Node.js serve
 
 ## Quick Start
+
+### Prerequisites
+
+- Node.js 20+ and npm
+- Docker (optional, for containerized deployment)
 
 ### Development
 
@@ -35,32 +59,26 @@ npm start
 # Navigate to http://localhost:4200
 ```
 
-### Docker
+### Production Build
 
 ```bash
-# Build and run with Docker Compose
-docker-compose up -d
+# Build for production
+npm run build
+
+# Output will be in dist/platform/browser/
+```
+
+### Docker Deployment
+
+```bash
+# Build Docker image
+docker build -t manning-capital-platform .
+
+# Run container
+docker run -p 8080:8080 manning-capital-platform
 
 # Access at http://localhost:8080
 ```
-
-See [DOCKER.md](DOCKER.md) for detailed Docker instructions.
-
-### Kubernetes
-
-```bash
-# Quick deployment (for local clusters)
-./deploy.sh
-
-# Manual deployment
-docker build -t quant-platform:v1.0.0 .
-kubectl apply -f k8s/
-
-# Access the application
-kubectl port-forward service/quant-platform 8080:80
-```
-
-See [KUBERNETES.md](KUBERNETES.md) for detailed Kubernetes deployment guide.
 
 ## Project Structure
 
@@ -69,112 +87,169 @@ platform/
 ├── src/
 │   ├── app/
 │   │   ├── components/
-│   │   │   ├── dashboard/           # Main dashboard
-│   │   │   ├── model-performance/   # Model analytics
-│   │   │   ├── live-trades/         # Live trades monitor
-│   │   │   ├── trade-chart/         # Chart component
-│   │   │   └── trade-metrics/       # Metrics display
-│   │   ├── models/                  # TypeScript interfaces
-│   │   ├── services/                # Angular services
-│   │   ├── app.ts                   # Root component
-│   │   └── app.routes.ts            # Routing config
-│   ├── styles.css                   # Global styles
-│   └── index.html                   # Entry point
-├── k8s/                             # Kubernetes manifests
-├── Dockerfile                       # Docker configuration
-├── docker-compose.yml               # Docker Compose config
-└── deploy.sh                        # Deployment script
-
-## Color Palette
-
-The application uses the Forest Reverie color scheme:
-
-- **Deep Green** (#49694c): Primary elements, headings
-- **Sage Green** (#a8c4a1): Positive indicators, accent
-- **Cream** (#e9d5a0): Text, backgrounds (light mode)
-- **Warm Orange** (#f6a055): Charts, warnings
-- **Terracotta** (#c16149): Negative indicators, alerts
+│   │   │   ├── about/                 # About page with contact info
+│   │   │   ├── dashboard/            # Main dashboard
+│   │   │   ├── live-trades/           # Live trades monitor
+│   │   │   ├── model-performance/     # Model analytics
+│   │   │   ├── trade-chart/          # Chart component
+│   │   │   └── trade-metrics/        # Metrics display
+│   │   ├── models/
+│   │   │   └── trade.model.ts        # TypeScript interfaces
+│   │   ├── services/
+│   │   │   ├── theme.service.ts      # Theme management
+│   │   │   └── trading.service.ts    # Trading data service
+│   │   ├── app.ts                    # Root component
+│   │   ├── app.routes.ts             # Routing configuration
+│   │   └── app.html                  # Root template
+│   ├── styles.css                    # Global styles and theme
+│   └── index.html                    # Entry point
+├── public/
+│   └── logo.png                      # Application logo
+├── Dockerfile                        # Docker configuration
+└── package.json                      # Dependencies
+```
 
 ## Features in Detail
 
 ### Dashboard
-- Real-time statistics overview
-- Active models summary
-- Recent trades list
-- Quick navigation to detailed views
+
+- Real-time statistics overview (Total P&L, Today's P&L, Active Models, Open Trades)
+- Quantitative models grid with key metrics
+- Recent trades table with quick navigation
+- Responsive card layout for mobile devices
 
 ### Model Performance
-- Card-based model overview
-- Detailed metrics for each model (Sharpe ratio, win rate, P&L, etc.)
-- Trade history table
-- Performance indicators
+
+- Card-based model overview with status indicators
+- Detailed model view with route-based navigation (`/models/:id`)
+- Comprehensive metrics:
+  - Total Profit/Loss
+  - Win Rate
+  - Sharpe Ratio
+  - Max Drawdown
+  - Average Win/Loss
+  - Profit Factor
+  - Expectancy
+- Paginated trade history table
+- "View All Trades" link with pre-populated filters
+- Mobile-responsive card layout for trade history
 
 ### Live Trades Monitor
-- Master-detail view with trade list and details
-- Advanced filtering (symbol, status, side, model, date range)
-- Pagination support (10 trades per page)
-- Real-time price updates
-- Trade metrics with custom charts
-- Strategy exit conditions display
-- Multiple time series views (price, volume, spread, etc.)
+
+- **Master-Detail Layout**: Trade list and detail view side-by-side (desktop) or stacked (mobile)
+- **Advanced Filtering**:
+  - Search by symbol/asset
+  - Filter by status (All/Open/Closed)
+  - Filter by side (All/Buy/Sell/Compound)
+  - Filter by model
+  - Date range filtering (defaults to past week, always includes open positions)
+- **Pagination**: 10 trades per page with smart pagination controls
+- **URL State Management**: All filters and pagination state stored in URL query parameters
+- **Trade Details**:
+  - Trade information and price data
+  - Performance metrics with custom charts
+  - Strategy exit conditions
+  - Model parameters
+  - Positions table (for compound trades)
+- **Compound Trade Support**: 
+  - Multi-position trades with from/to asset pairs
+  - Positions displayed in table format (desktop) or cards (mobile)
+  - Aggregate P&L calculation
+- **Real-time Updates**: Live price updates with automatic P&L recalculation
+- **Mobile Optimized**: 
+  - Filters hidden when viewing trade detail
+  - Back button for navigation
+  - Card-based layouts for tables
+
+### Trade Charts
+
+- Multiple time series views (Price, Volume, Spread, etc.)
+- Signal markers (Entry, Exit, Stop Loss, Take Profit)
+- Customizable color scheme
+- Responsive sizing
 
 ### Theme System
-- Dark and light modes
-- Persistent theme selection
-- Smooth transitions
-- Custom color palette
+
+- **Dark Mode**: Black and dark colors with accent colors
+- **Light Mode**: White and off-white with accent colors
+- **Color Palette**: Custom palette with 10 colors for various UI elements
+- **Persistent Theme**: Theme selection saved in localStorage
+- **Smooth Transitions**: Theme switching with smooth color transitions
+
+## Color Palette
+
+The application uses a custom color palette defined in CSS variables:
+
+- **Strawberry Red** (#f94144): Negative indicators, stop loss
+- **Atomic Tangerine** (#f3722c): Warnings, accents
+- **Carrot Orange** (#f8961e): Exit signals, highlights
+- **Tuscan Sun** (#f9c74f): Charts, secondary accents
+- **Willow Green** (#90be6d): Positive indicators
+- **Seagrass** (#43aa8b): Entry signals, primary positive
+- **Blue Slate** (#577590): Accent color, navigation
+- **Slate Grey** (#66829a): Secondary text
+- **Air Force Blue** (#748da3): Take profit signals
+- **Cool Steel** (#8197ab): Tertiary elements
+
+## Routing
+
+- `/` - Redirects to dashboard
+- `/dashboard` - Main dashboard
+- `/models` - Model list view
+- `/models/:id` - Model detail view
+- `/live-trades` - Live trades monitor
+- `/about` - About page with contact information
+
+## Mobile Responsiveness
+
+The application is fully responsive with mobile-specific optimizations:
+
+- **Navigation**: Top-sliding menu on mobile
+- **Layouts**: Card-based layouts replace tables on mobile
+- **Filtering**: Filters hidden when viewing details on mobile
+- **Navigation**: Back buttons for easy navigation
+- **Touch-Friendly**: Large touch targets and optimized spacing
 
 ## Development
 
-### Build for Production
-```bash
-npm run build
-```
+### Code Style
 
-### Run Tests
+- Prettier configuration included
+- Single quotes for strings
+- 100 character line width
+- Angular HTML parser for templates
+
+### Running Tests
+
 ```bash
 npm test
 ```
 
-### Code Style
-```bash
-# Format code
-npm run format
+### Building for Production
 
-# Lint code
-npm run lint
-```
-
-## Deployment Options
-
-### 1. Docker (Simple)
-Best for: Small deployments, development, single-server hosting
-- See [DOCKER.md](DOCKER.md)
-
-### 2. Kubernetes (Scalable)
-Best for: Production, high availability, auto-scaling
-- See [KUBERNETES.md](KUBERNETES.md)
-
-### 3. Static Hosting
-Build and deploy to any static host:
 ```bash
 npm run build
-# Upload dist/platform/browser/ to your host
 ```
+
+The production build will be output to `dist/platform/browser/`.
 
 ## Configuration
 
-### Environment Variables
-Currently uses mock data. To connect to a real backend:
+### Mock Data
 
-1. Create environment configuration
-2. Update `TradingService` to fetch from API
+The application currently uses mock data generated in `TradingService`. To connect to a real backend:
+
+1. Create environment configuration files
+2. Update `TradingService` to fetch from API endpoints
 3. Add API URL to environment config
+4. Handle authentication if required
 
 ### Customization
+
 - **Colors**: Edit CSS variables in `src/styles.css`
 - **Mock Data**: Modify `src/app/services/trading.service.ts`
 - **Routes**: Update `src/app/app.routes.ts`
+- **Contact Info**: Update `src/app/components/about/about.component.ts`
 
 ## Browser Support
 
@@ -183,18 +258,36 @@ Currently uses mock data. To connect to a real backend:
 - Safari (latest)
 - Edge (latest)
 
-## Contributing
+## Deployment
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+### Docker
+
+The application includes a multi-stage Dockerfile that:
+1. Builds the Angular application
+2. Serves it using Node.js `serve` package
+
+```bash
+docker build -t manning-capital-platform .
+docker run -p 8080:8080 manning-capital-platform
+```
+
+### Static Hosting
+
+Build the application and deploy the `dist/platform/browser/` directory to any static hosting service:
+- Netlify
+- Vercel
+- AWS S3 + CloudFront
+- GitHub Pages
+- Any web server
 
 ## License
 
 Private - All rights reserved
 
-## Support
+## Contact
 
-For issues and questions, please open an issue on the repository.
+For questions or support, visit the [About page](/about) or contact:
+- Email: glynfinck@gmail.com
+- Phone: +44 7765 564378
+- GitHub: [Personal](https://github.com/glynfinck) | [Organization](https://github.com/manning-capital)
+- LinkedIn: [Profile](https://linkedin.com/in/glynfinck)
