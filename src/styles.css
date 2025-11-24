@@ -122,6 +122,7 @@
   
   /* Borders */
   --border-color: rgba(255, 255, 255, 0.1);
+  --model-card-border-color: rgba(255, 255, 255, 0.05);
   
   /* Accents - Use colorful palette minimally (avoid green to not conflict with positive numbers) */
   --accent-color: var(--blue-slate-rgba-20);
@@ -155,6 +156,7 @@
   
   /* Borders */
   --border-color: rgba(0, 0, 0, 0.1);
+  --model-card-border-color: rgba(0, 0, 0, 0.1);
   
   /* Accents - Use colorful palette minimally (avoid green to not conflict with positive numbers) */
   --accent-color: var(--blue-slate-rgba-20);
