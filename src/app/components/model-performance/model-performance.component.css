@@ -32,7 +32,7 @@
 }
 
 .model-card {
-  background: var(--card-bg);
+  background: var(--card-bg-light);
   border: 1px solid var(--border-color);
   border-radius: 0;
   padding: 1.5rem;
@@ -41,6 +41,12 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+/* Dark mode: no border */
+:host-context([data-theme="dark"]) .model-card,
+:host-context(:not([data-theme])) .model-card {
+  border: none;
 }
 
 .model-card:hover {
@@ -222,7 +228,7 @@
 }
 
 .model-info-card {
-  background: var(--card-bg);
+  background: var(--card-bg-light);
   backdrop-filter: blur(10px);
   border: 1px solid var(--border-color);
   border-radius: 0;
@@ -710,7 +716,7 @@
   }
 
   .trade-card {
-    background: var(--hover-bg);
+    background: var(--card-bg-light);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 1rem;

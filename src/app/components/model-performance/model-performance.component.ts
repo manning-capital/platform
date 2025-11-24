@@ -174,7 +174,7 @@ export class ModelPerformanceComponent implements OnInit, OnDestroy {
 
   // Get view all trades link with query params
   protected getViewAllTradesLink(): string[] {
-    return ['/live-trades'];
+    return ['/trades'];
   }
 
   protected getViewAllTradesQueryParams(): { [key: string]: string } {

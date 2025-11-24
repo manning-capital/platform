@@ -150,17 +150,28 @@
 }
 
 .model-card {
-  background: var(--card-bg);
+  background: var(--card-bg-light);
   backdrop-filter: blur(10px);
-  border: none;
+  border: 1px solid var(--border-color);
   border-radius: 0;
   padding: 1.5rem;
   transition: all 0.3s ease;
 }
 
+/* Dark mode: no border */
+:host-context([data-theme="dark"]) .model-card,
+:host-context(:not([data-theme])) .model-card {
+  border: none;
+}
+
 .model-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 32px var(--blue-slate-rgba-20);
+}
+
+/* Light mode hover border color */
+:host-context([data-theme="light"]) .model-card:hover {
+  border-color: var(--accent-color);
 }
 
 .model-card.active {
@@ -515,7 +526,7 @@ tr:hover {
   }
 
   .trade-card {
-    background: var(--card-bg);
+    background: var(--card-bg-light);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 1rem;

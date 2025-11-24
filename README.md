@@ -197,7 +197,7 @@ The application uses a custom color palette defined in CSS variables:
 - `/dashboard` - Main dashboard
 - `/models` - Model list view
 - `/models/:id` - Model detail view
-- `/live-trades` - Live trades monitor
+- `/trades` - Trades monitor
 - `/about` - About page with contact information
 
 ## Mobile Responsiveness

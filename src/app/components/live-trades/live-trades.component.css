@@ -557,7 +557,7 @@
 }
 
 .detail-section {
-  background: var(--card-bg);
+  background: var(--card-bg-light);
   border: 1px solid var(--border-color);
   border-radius: 0;
   padding: 1.5rem;
@@ -617,7 +617,7 @@
 }
 
 .parameter-card {
-  background: var(--hover-bg);
+  background: var(--card-bg-light);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 1rem;
@@ -629,7 +629,6 @@
 
 .parameter-card:hover {
   border-color: var(--accent-color);
-  background: var(--card-bg);
 }
 
 .parameter-header {
@@ -858,7 +857,7 @@
   }
 
   .position-card {
-    background: var(--card-bg);
+    background: var(--card-bg-light);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 1rem;
@@ -958,7 +957,7 @@
 
 .positions-table-container {
   overflow-x: auto;
-  background: var(--card-bg);
+  background: var(--card-bg-light);
   border: 1px solid var(--border-color);
   border-radius: 8px;
 }
