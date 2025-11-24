@@ -1,116 +1,202 @@
-import { Component, Input, computed, signal } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ViewChild, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { BaseChartDirective } from 'ng2-charts';
+import { ChartConfiguration, ChartData, Chart, registerables } from 'chart.js';
 import { TradeChartData } from '../../models/trade.model';
+
+// Register Chart.js components
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-trade-chart',
-  imports: [CommonModule],
+  imports: [CommonModule, BaseChartDirective],
   templateUrl: './trade-chart.component.html',
   styleUrl: './trade-chart.component.css'
 })
-export class TradeChartComponent {
+export class TradeChartComponent implements OnChanges, OnInit {
   @Input() set chartData(data: TradeChartData | null) {
     this.chartDataSignal.set(data);
+    if (data) {
+      this.updateChart(data);
+    }
   }
+
+  @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
   private chartDataSignal = signal<TradeChartData | null>(null);
   protected data = this.chartDataSignal.asReadonly();
 
-  protected readonly viewBoxWidth = 1000;
-  protected readonly viewBoxHeight = 300;
-  protected readonly padding = { top: 20, right: 80, bottom: 40, left: 60 };
-  
-  protected get viewBox(): string {
-    return `0 0 ${this.viewBoxWidth} ${this.viewBoxHeight}`;
+  public chartType: 'line' = 'line';
+  public chartJsData: ChartData<'line'> = {
+    datasets: []
+  };
+  public get chartOptions(): ChartConfiguration<'line'>['options'] {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      transitions: {
+        active: {
+          animation: {
+            duration: 0
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: {
+            usePointStyle: true,
+            padding: 15,
+            font: {
+              size: 12
+            },
+            filter: (item) => {
+              // Only show legend for signal levels, not the main data line
+              const data = this.data();
+              if (!data) return false;
+              return item.text !== data.metricName;
+            }
+          }
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            title: (items) => {
+              const data = this.data();
+              if (!data || !data.timeSeries.length) return '';
+              const index = items[0].dataIndex;
+              if (index >= 0 && index < data.timeSeries.length) {
+                return this.formatTime(data.timeSeries[index].timestamp);
+              }
+              return '';
+            },
+            label: (context) => {
+              const yValue = context.parsed.y;
+              if (yValue === null || yValue === undefined) return '';
+              return `${context.dataset.label}: ${this.formatValue(yValue)}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'linear',
+          display: true,
+          title: {
+            display: false
+          },
+          ticks: {
+            stepSize: 1,
+            callback: (value) => {
+              const data = this.data();
+              if (!data || !data.timeSeries.length) return '';
+              const index = value as number;
+              if (index >= 0 && index < data.timeSeries.length) {
+                return this.formatTime(data.timeSeries[index].timestamp);
+              }
+              return '';
+            },
+            maxTicksLimit: 6
+          },
+          grid: {
+            display: true,
+            color: 'rgba(128, 128, 128, 0.2)'
+          }
+        },
+        y: {
+          display: true,
+          title: {
+            display: false
+          },
+          grid: {
+            display: true,
+            color: 'rgba(128, 128, 128, 0.2)'
+          },
+          ticks: {
+            callback: (value) => {
+              return this.formatValue(value as number);
+            }
+          }
+        }
+      },
+      interaction: {
+        mode: 'index',
+        intersect: false
+      }
+    };
   }
 
-  protected chartWidth = computed(() => this.viewBoxWidth - this.padding.left - this.padding.right);
-  protected chartHeight = computed(() => this.viewBoxHeight - this.padding.top - this.padding.bottom);
+  ngOnInit(): void {
+    // Component initialization
+  }
 
-  protected pathData = computed(() => {
-    const data = this.data();
-    if (!data || data.timeSeries.length === 0) return '';
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['chartData'] && this.chartDataSignal()) {
+      this.updateChart(this.chartDataSignal()!);
+    }
+  }
 
-    const { min, max } = this.getMinMax();
-    const points = data.timeSeries.map((point, index) => {
-      const x = (index / (data.timeSeries.length - 1)) * this.chartWidth();
-      const y = this.chartHeight() - ((point.value - min) / (max - min)) * this.chartHeight();
-      return `${x},${y}`;
-    });
-
-    return `M ${points.join(' L ')}`;
-  });
-
-  protected signalLinesData = computed(() => {
-    const data = this.data();
-    if (!data) return [];
-
-    const { min, max } = this.getMinMax();
-    return data.signalLevels.map(level => {
-      const y = this.chartHeight() - ((level.value - min) / (max - min)) * this.chartHeight();
-      return {
-        ...level,
-        y,
-        x1: 0,
-        x2: this.chartWidth()
-      };
-    });
-  });
-
-  protected yAxisLabels = computed(() => {
-    const { min, max } = this.getMinMax();
-    const steps = 5;
-    const labels: { value: number; y: number }[] = [];
-
-    for (let i = 0; i <= steps; i++) {
-      const value = min + (max - min) * (i / steps);
-      const y = this.chartHeight() - (i / steps) * this.chartHeight();
-      labels.push({ value, y });
+  private updateChart(data: TradeChartData): void {
+    if (!data || !data.timeSeries.length) {
+      this.chartJsData = { datasets: [] };
+      return;
     }
 
-    return labels;
-  });
+    // Prepare main data line - use index as x value
+    const dataPoints = data.timeSeries.map((point, index) => ({ x: index, y: point.value }));
 
-  protected xAxisLabels = computed(() => {
-    const data = this.data();
-    if (!data || data.timeSeries.length === 0) return [];
-
-    const points = 5;
-    const step = Math.floor(data.timeSeries.length / points);
-    const labels: { time: string; x: number }[] = [];
-
-    for (let i = 0; i <= points; i++) {
-      const index = Math.min(i * step, data.timeSeries.length - 1);
-      const point = data.timeSeries[index];
-      const x = (index / (data.timeSeries.length - 1)) * this.chartWidth();
-      labels.push({
-        time: this.formatTime(point.timestamp),
-        x
-      });
-    }
-
-    return labels;
-  });
-
-  private getMinMax(): { min: number; max: number } {
-    const data = this.data();
-    if (!data || data.timeSeries.length === 0) {
-      return { min: 0, max: 100 };
-    }
-
-    const values = [
-      ...data.timeSeries.map(p => p.value),
-      ...data.signalLevels.map(l => l.value)
+    // Create datasets array
+    const datasets: any[] = [
+      {
+        label: data.metricName,
+        data: dataPoints,
+        borderColor: 'var(--chart-primary, #43aa8b)',
+        backgroundColor: 'transparent',
+        borderWidth: 3,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointHoverBorderWidth: 2,
+        pointHoverBackgroundColor: 'var(--chart-primary, #43aa8b)',
+        pointHoverBorderColor: '#fff',
+        tension: 0.4,
+        fill: false,
+        order: 1
+      }
     ];
 
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const padding = (max - min) * 0.1;
+    // Add signal levels as horizontal lines
+    data.signalLevels.forEach(level => {
+      const color = this.getSignalColor(level.type);
+      datasets.push({
+        label: `${level.label}: ${this.formatValue(level.value)}`,
+        data: [
+          { x: 0, y: level.value },
+          { x: data.timeSeries.length - 1, y: level.value }
+        ],
+        borderColor: color,
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        borderDash: [5, 5],
+        pointRadius: 0,
+        pointHoverRadius: 0,
+        tension: 0,
+        fill: false,
+        order: 0
+      });
+    });
 
-    return {
-      min: min - padding,
-      max: max + padding
+    this.chartJsData = {
+      labels: data.timeSeries.map((_, index) => index),
+      datasets: datasets
     };
+
+    // Update chart if it exists (without animation)
+    if (this.chart) {
+      this.chart.update('none');
+    }
   }
 
   protected formatValue(value: number): string {
@@ -124,7 +210,7 @@ export class TradeChartComponent {
     }).format(date);
   }
 
-  protected getSignalColor(type: string): string {
+  private getSignalColor(type: string): string {
     switch (type) {
       case 'entry': return '#43aa8b'; // seagrass - teal for entry
       case 'exit': return '#f8961e'; // carrot-orange - orange for exit
@@ -134,4 +220,3 @@ export class TradeChartComponent {
     }
   }
 }
-
