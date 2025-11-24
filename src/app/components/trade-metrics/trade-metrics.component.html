@@ -7,11 +7,6 @@
         @for (condition of metrics.strategyConditions; track condition.id) {
           <div class="condition-card" [class.met]="condition.isMet" [class.unmet]="!condition.isMet">
             <div class="condition-header">
-              <div class="condition-icon" [class.met]="condition.isMet">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path [attr.d]="getConditionIcon(condition.type)"/>
-                </svg>
-              </div>
               <div class="condition-status">
                 @if (condition.isMet) {
                   <span class="status-badge met">✓ MET</span>

@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ModelPerformanceComponent } from './components/model-performance/model-performance.component';
 import { LiveTradesComponent } from './components/live-trades/live-trades.component';
+import { AboutComponent } from './components/about/about.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
@@ -9,4 +10,5 @@ export const routes: Routes = [
   { path: 'models', component: ModelPerformanceComponent },
   { path: 'models/:id', component: ModelPerformanceComponent },
   { path: 'live-trades', component: LiveTradesComponent },
+  { path: 'about', component: AboutComponent },
 ];
